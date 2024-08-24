@@ -34,6 +34,7 @@ class ImportScanner extends Handlebars.Visitor implements ImportScanner {
 interface HandlebarsPluginOptions extends CompileOptions {
     helpers?: object;
     partials?: object;
+	templateData?: Object;
 }
 
 interface TemplateSpecification {
@@ -159,6 +160,11 @@ export default function handlebarsCompiler(handlebarsPluginOptions: HandlebarsPl
         precompileOptions.srcName = name
 		const { code, map }: TemplateSpecification = Handlebars.precompile(tree, precompileOptions);
 
+		let pluginTemplateData = {}
+		if (handlebarsPluginOptions && handlebarsPluginOptions.templateData && typeof handlebarsPluginOptions.templateData === 'object') {
+			pluginTemplateData = handlebarsPluginOptions.templateData
+		}
+
 		// Import this (partial) template and nested templates
 		const body = `
 			import Handlebars from 'handlebars/runtime.js';
@@ -166,7 +172,13 @@ export default function handlebarsCompiler(handlebarsPluginOptions: HandlebarsPl
 			Handlebars.registerPartial('${name}', template);
 			${helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
 			${children.map(([partial, compiled]) => `Handlebars.registerPartial('${partial}', Handlebars.template(${compiled}));`).join('\n')}
-			export default (data, options) => template(data, options);
+			export default (data, options) => {
+				if (!data || typeof data !== 'object') {
+					data = {}
+				}
+				let templateData = Object.assign({}, ${JSON.stringify(pluginTemplateData)}, data)
+				return template(templateData, options)
+			};
 		`;
 
 		return {
