@@ -6,8 +6,9 @@ If you'd like to discuss a change you want to make before spending the time to w
 
 ### Steps for submitting a pull request
 
-1. If you are adding a feature, make sure it is documented in the `README.md` file.
-2. Update the `CHANGELOG.md` file to reflect your change.
+1. Run the tslint and unit tests with `npm run test` and resolve any issues.
+2. If you are adding a feature, make sure it is documented in the `README.md` file.
+3. Update the `CHANGELOG.md` file to reflect your change.
 
 
 
