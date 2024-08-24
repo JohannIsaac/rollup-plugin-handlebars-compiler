@@ -84,6 +84,7 @@ export default {
 
             partials, // An object with one or more items of `partialName: partialHandlebarsTemplate`
             helpers, // An object with one or more items of `helperName: function`
+            templateData, // An object that passes data to the Handlebars template
 
 
             /* Handlebars compile options */
@@ -113,9 +114,63 @@ export default {
 
 ## Details
 
+### Data
+
+To pass data to templates, you can either:
+1. Pass data globally to all templates through the `templateData` object to the plugin options.
+1. Pass data as a parameter to the JS template function.
+
+### Pass data through plugin options
+
+To pass global data accessible by all templates, simply pass an object to `templateData` in the plugin options.
+
+```javascript
+// rollup.config.js
+export default {
+    plugins: [
+        ...
+        HandlebarsCompiler({
+            templateData: {
+                firstname: 'John',
+                lastname: 'Doe'
+            },
+        })
+    ]
+}
+```
+
+### Pass data through the template function
+
+To pass data specific to the template function, simply pass an object to the first parameter.
+
+```javascript
+// src/js/main.js
+import PageTemplate from '../views/page.hbs';
+document.body.append(PageTemplate({
+    firstname: 'Jane',
+    lastname: 'Doe'
+}));
+```
+
+Both the data from the plugin options and the template function parameter will be accessible in the template. If the data in the template function parameter has the same key as the global data from the plugin options, the data from the template function will override that of the plugin options.
+
+```hbs
+{{! src/page.hbs }}
+{{! templateData has `firstname: 'John'` and `lastname: 'Doe'` }}
+{{! function data parameter has `firstname: 'Jane'` and `lastname: 'Doe'` }}
+{{firstname}} {{lastname}}
+```
+
+Output:
+```html
+Jane Doe
+```
+
+
+
 ### Helpers
 
-To pass helpers, simply pass a `helpers` object to the Handlebars Compiler plugin.
+To pass helpers, simply pass a `helpers` object to the plugin options.
 
 ```javascript
 // src/helpers.js
@@ -150,12 +205,12 @@ export default {
 ### Partials
 
 To pass partials, you can either:
-1. Pass partials to the `partials` object to the Handlebars Compiler plugin.
+1. Pass partials to the `partials` object to the plugin options.
 1. Use the relative path in the handlebars template/partial.
 
 #### Register through plugin options
 
-To register through plugin options. Simply pass the partial content with the partial name as the ID.
+To register through plugin options, simply pass the partial content with the partial name as the ID.
 
 ```javascript
 // rollup.config.js

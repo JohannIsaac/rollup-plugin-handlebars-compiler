@@ -65,3 +65,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Simplified Rollup config for building package
 - Updated license in `package.json`
+
+
+
+## [1.0.7] 2020-8-25
+
+### Added
+
+- Added support for passing template data to plugin options
