@@ -1,0 +1,67 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+
+
+## [1.0.0] 2020-8-24
+
+### Added
+
+- Rollup plugin
+- Support for passing pre-compile (and compile) options to the plugin options.
+- Support for helpers and partials by passing to the plugin options.
+- Support for partials by relative path.
+
+
+
+## [1.0.1] 2020-8-24
+
+### Added
+
+- Added peer dependencies to package.json
+
+
+
+## [1.0.2] 2020-8-24
+
+### Changed
+
+- Changed default function name to match plugin name
+
+
+
+## [1.0.3] 2020-8-24
+
+### Changed
+
+- Completed documentation in [README.md](./README.md)
+
+
+
+## [1.0.4] 2020-8-24
+
+### Changed
+
+- Shortened documentation.
+
+
+
+## [1.0.5] 2020-8-25
+
+### Added
+
+- Added `CHANGELONG.md`
+- Added [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+
+
+## [1.0.6] 2020-8-25
+
+### Added
+
+- Simplified Rollup config for building package
+- Updated license in `package.json`
