@@ -8451,6 +8451,10 @@ function handlebarsCompiler(handlebarsPluginOptions) {
         var precompileOptions = Object.assign({}, handlebarsPluginOptions);
         precompileOptions.srcName = name;
         var _c = Handlebars.precompile(tree, precompileOptions), code = _c.code, map = _c.map;
+        var pluginTemplateData = {};
+        if (handlebarsPluginOptions && handlebarsPluginOptions.templateData && typeof handlebarsPluginOptions.templateData === 'object') {
+            pluginTemplateData = handlebarsPluginOptions.templateData;
+        }
         // Import this (partial) template and nested templates
         var body = "\n\t\t\timport Handlebars from 'handlebars/runtime.js';\n\t\t\tconst template = Handlebars.template(".concat(code, ");\n\t\t\tHandlebars.registerPartial('").concat(name, "', template);\n\t\t\t").concat(helpers.map(function (_a) {
             var _b = __read(_a, 2), helper = _b[0], fn = _b[1];
@@ -8458,7 +8462,7 @@ function handlebarsCompiler(handlebarsPluginOptions) {
         }).join('\n'), "\n\t\t\t").concat(children.map(function (_a) {
             var _b = __read(_a, 2), partial = _b[0], compiled = _b[1];
             return "Handlebars.registerPartial('".concat(partial, "', Handlebars.template(").concat(compiled, "));");
-        }).join('\n'), "\n\t\t\texport default (data, options) => template(data, options);\n\t\t");
+        }).join('\n'), "\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(pluginTemplateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
         return {
             code: body,
             map: map,
