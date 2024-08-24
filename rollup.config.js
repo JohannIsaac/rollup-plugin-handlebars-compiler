@@ -45,8 +45,8 @@ const MAIN_CONFIG = {
                 overwrite: true,
             },
             {
-                src: `dist/types/index.d.ts`,
-                dest: `types/index.d.ts`,
+                src: `dist/types/lib`,
+                dest: `types`,
                 overwrite: true,
             }
         ])

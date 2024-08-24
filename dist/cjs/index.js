@@ -8312,39 +8312,16 @@ if (typeof commonjsRequire !== 'undefined' && commonjsRequire.extensions) {
 
 var Handlebars = /*@__PURE__*/getDefaultExportFromCjs(lib);
 
-var ImportScanner = /** @class */ (function (_super) {
-    __extends(ImportScanner, _super);
-    function ImportScanner() {
-        var _this = _super.call(this) || this;
-        _this.partials = new Set();
-        _this.helpers = new Set();
-        return _this;
+var HandlebarsCompiler = /** @class */ (function () {
+    function HandlebarsCompiler(handlebarsPluginOptions) {
+        this.handlebarsPluginOptions = handlebarsPluginOptions;
+        this.cache = new Map();
     }
-    ImportScanner.prototype.PartialStatement = function (partial) {
-        if (partial.name && partial.name.type === 'PathExpression') {
-            this.partials.add(partial.name.original);
-            return _super.prototype.PartialStatement.call(this, partial);
-        }
-        else {
-            throw new Error('Dynamic partial resolution is not supported');
-        }
-    };
-    return ImportScanner;
-}(Handlebars.Visitor));
-function handlebarsCompiler(handlebarsPluginOptions) {
-    // Template cache
-    var cache = new Map();
-    function getCompiledPartial(_a) {
-        var _b = __read(_a, 2), partial = _b[0], source = _b[1];
-        var compiled = Handlebars.precompile(source, handlebarsPluginOptions);
-        var compiledData = [partial, compiled];
-        return compiledData;
-    }
-    function renamePartial(source, partialName, newPartialName) {
-        source = source.replaceAll(new RegExp("(\\{\\{>(\\n|\\s)*)(".concat(partialName, ")"), "g"), "$1".concat(newPartialName, " "));
+    HandlebarsCompiler.renamePartial = function (source, partialName, newPartialName) {
+        source = source.replaceAll(new RegExp("(\\{\\{>(\\n|\\s)*)(".concat(partialName, ")"), 'g'), "$1".concat(newPartialName, " "));
         return source;
-    }
-    function getPartialSource(partialPath, genesisFileDirectory, currentFile) {
+    };
+    HandlebarsCompiler.getPartialSource = function (partialPath, genesisFileDirectory, currentFile) {
         var relativeFileDirectory = path.dirname(currentFile);
         var relativePartialPath = path.join(relativeFileDirectory, partialPath);
         var partialAbsolutePath = path.resolve(genesisFileDirectory, "".concat(relativePartialPath, ".hbs"));
@@ -8358,15 +8335,21 @@ function handlebarsCompiler(handlebarsPluginOptions) {
             console.error("\t\u001B[2mError in ".concat(fileWithError, "\u001B[0m"));
         }
         return partialSource;
-    }
+    };
+    HandlebarsCompiler.prototype.getCompiledPartial = function (_a) {
+        var _b = __read(_a, 2), partial = _b[0], source = _b[1];
+        var compiled = Handlebars.precompile(source, this.handlebarsPluginOptions);
+        var compiledData = [partial, compiled];
+        return compiledData;
+    };
     // Recursive function for getting nested partials with pathname
-    function getPartialSources(name, source, genesisFileDirectory, list) {
+    HandlebarsCompiler.prototype.getPartialSources = function (name, source, genesisFileDirectory, list) {
         var e_1, _a;
         if (list === void 0) { list = []; }
         var filename = "".concat(name, ".hbs");
         var relativeFileDirectory = path.dirname(name);
         var tree = Handlebars.parse(source);
-        var scanner = new ImportScanner();
+        var scanner = new HandlebarsCompiler.ImportScanner();
         scanner.accept(tree);
         // Partials have been found
         if (scanner.partials.size) {
@@ -8374,18 +8357,18 @@ function handlebarsCompiler(handlebarsPluginOptions) {
                 for (var _b = __values(scanner.partials), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var partialPath = _c.value;
                     // Check if partial name is already registered in handlebarsPluginOptions
-                    if (handlebarsPluginOptions.partials &&
-                        typeof handlebarsPluginOptions.partials === 'object' &&
-                        handlebarsPluginOptions.partials[partialPath]) {
+                    if (this.handlebarsPluginOptions.partials &&
+                        typeof this.handlebarsPluginOptions.partials === 'object' &&
+                        this.handlebarsPluginOptions.partials[partialPath]) {
                         continue;
                     }
-                    var partialSource = getPartialSource(partialPath, genesisFileDirectory, filename);
+                    var partialSource = HandlebarsCompiler.getPartialSource(partialPath, genesisFileDirectory, filename);
                     // Skip if partial does not exist
                     if (!partialSource)
                         continue;
-                    var partialName = path.join(relativeFileDirectory, partialPath).replaceAll("\\", '/');
-                    source = renamePartial(source, partialPath, partialName);
-                    list = getPartialSources(partialName, partialSource, genesisFileDirectory, list);
+                    var partialName = path.join(relativeFileDirectory, partialPath).replaceAll('\\', '/');
+                    source = HandlebarsCompiler.renamePartial(source, partialPath, partialName);
+                    list = this.getPartialSources(partialName, partialSource, genesisFileDirectory, list);
                 }
             }
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -8399,35 +8382,35 @@ function handlebarsCompiler(handlebarsPluginOptions) {
         var sourceData = [name, source];
         list.push(sourceData);
         return list;
-    }
-    function getHelpers() {
+    };
+    HandlebarsCompiler.prototype.getHelpers = function () {
         var helpers = [];
-        if (!handlebarsPluginOptions || !handlebarsPluginOptions.helpers || typeof handlebarsPluginOptions.helpers !== 'object')
+        if (!this.handlebarsPluginOptions || !this.handlebarsPluginOptions.helpers || typeof this.handlebarsPluginOptions.helpers !== 'object')
             return helpers;
-        helpers = Object.entries(handlebarsPluginOptions.helpers).filter(function (_a) {
+        helpers = Object.entries(this.handlebarsPluginOptions.helpers).filter(function (_a) {
             var _b = __read(_a, 2); _b[0]; var fn = _b[1];
             return typeof fn === 'function';
         });
         return helpers;
-    }
-    function getPartials() {
+    };
+    HandlebarsCompiler.prototype.getPartials = function () {
         var partials = [];
-        if (!handlebarsPluginOptions || !handlebarsPluginOptions.partials || typeof handlebarsPluginOptions.partials !== 'object')
+        if (!this.handlebarsPluginOptions || !this.handlebarsPluginOptions.partials || typeof this.handlebarsPluginOptions.partials !== 'object')
             return partials;
-        partials = Object.entries(handlebarsPluginOptions.partials).filter(function (_a) {
+        partials = Object.entries(this.handlebarsPluginOptions.partials).filter(function (_a) {
             var _b = __read(_a, 2); _b[0]; var source = _b[1];
             return typeof source === 'string';
         });
         return partials;
-    }
+    };
     // Convert to ESM and register partial
-    function toEsm(source, id) {
+    HandlebarsCompiler.prototype.toEsm = function (source, id) {
         var e_2, _a;
         var dir = path.dirname(id);
         var name = path.basename(id, '.hbs');
         // Get nested partials
-        var partials = getPartials();
-        var partialsByPaths = getPartialSources(name, source, dir);
+        var partials = this.getPartials();
+        var partialsByPaths = this.getPartialSources(name, source, dir);
         partials.push.apply(partials, __spreadArray([], __read(partialsByPaths), false));
         var templateData = partials.find(function (_a) {
             var _b = __read(_a, 2), partial = _b[0]; _b[1];
@@ -8437,7 +8420,7 @@ function handlebarsCompiler(handlebarsPluginOptions) {
         try {
             for (var partials_1 = __values(partials), partials_1_1 = partials_1.next(); !partials_1_1.done; partials_1_1 = partials_1.next()) {
                 var _b = __read(partials_1_1.value, 2), partial = _b[0], source_1 = _b[1];
-                children.push(getCompiledPartial([partial, source_1]));
+                children.push(this.getCompiledPartial([partial, source_1]));
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -8447,15 +8430,15 @@ function handlebarsCompiler(handlebarsPluginOptions) {
             }
             finally { if (e_2) throw e_2.error; }
         }
-        var helpers = getHelpers();
+        var helpers = this.getHelpers();
         // Create a tree
         var tree = Handlebars.parse(templateData[1], { srcName: name });
-        var precompileOptions = Object.assign({}, handlebarsPluginOptions);
+        var precompileOptions = Object.assign({}, this.handlebarsPluginOptions);
         precompileOptions.srcName = name;
         var _c = Handlebars.precompile(tree, precompileOptions), code = _c.code, map = _c.map;
         var pluginTemplateData = {};
-        if (handlebarsPluginOptions && handlebarsPluginOptions.templateData && typeof handlebarsPluginOptions.templateData === 'object') {
-            pluginTemplateData = handlebarsPluginOptions.templateData;
+        if (this.handlebarsPluginOptions && this.handlebarsPluginOptions.templateData && typeof this.handlebarsPluginOptions.templateData === 'object') {
+            pluginTemplateData = this.handlebarsPluginOptions.templateData;
         }
         // Import this (partial) template and nested templates
         var body = "\n\t\t\timport Handlebars from 'handlebars/runtime.js';\n\t\t\tconst template = Handlebars.template(".concat(code, ");\n\t\t\tHandlebars.registerPartial('").concat(name, "', template);\n\t\t\t").concat(helpers.map(function (_a) {
@@ -8469,20 +8452,44 @@ function handlebarsCompiler(handlebarsPluginOptions) {
             code: body,
             map: map,
         };
-    }
+    };
+    HandlebarsCompiler.ImportScanner = /** @class */ (function (_super) {
+        __extends(class_1, _super);
+        function class_1() {
+            var _this = _super.call(this) || this;
+            _this.partials = new Set();
+            _this.helpers = new Set();
+            return _this;
+        }
+        class_1.prototype.PartialStatement = function (partial) {
+            if (partial.name && partial.name.type === 'PathExpression') {
+                this.partials.add(partial.name.original);
+                return _super.prototype.PartialStatement.call(this, partial);
+            }
+            else {
+                throw new Error('Dynamic partial resolution is not supported');
+            }
+        };
+        return class_1;
+    }(Handlebars.Visitor));
+    return HandlebarsCompiler;
+}());
+
+function handlebarsCompilerPlugin(handlebarsPluginOptions) {
+    var compiler = new HandlebarsCompiler(handlebarsPluginOptions);
     return {
-        name: 'handlebars-template',
+        name: 'handlebars-compiler',
         transform: function (source, id) {
             if (/\.(hbs|handlebars)/.test(id)) {
                 // Get from cache when avalaible
-                if (cache.has(id)) {
+                if (compiler.cache.has(id)) {
                     try {
-                        return JSON.parse(cache.get(id));
+                        return JSON.parse(compiler.cache.get(id));
                     }
                     catch (e) { }
                 }
-                var output = toEsm(source, id);
-                cache.set(id, JSON.stringify(output));
+                var output = compiler.toEsm(source, id);
+                compiler.cache.set(id, JSON.stringify(output));
                 return output;
             }
             return null;
@@ -8490,4 +8497,4 @@ function handlebarsCompiler(handlebarsPluginOptions) {
     };
 }
 
-module.exports = handlebarsCompiler;
+module.exports = handlebarsCompilerPlugin;

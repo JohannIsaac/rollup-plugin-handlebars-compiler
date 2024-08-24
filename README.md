@@ -23,14 +23,14 @@ npm i @rollup/plugin-node-resolve @rollup/plugin-commonjs
 // rollup.config.js
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonJS from '@rollup/plugin-commonjs';
-import HandlebarsCompiler from 'rollup-plugin-handlebars-compiler'
+import handlebarsCompiler from 'rollup-plugin-handlebars-compiler'
 
 export default {
     ...
     plugins: [
         nodeResolve(),
         commonJS(),
-        HandlebarsCompiler()
+        handlebarsCompiler()
     ]
 }
 ```
@@ -78,7 +78,7 @@ export default {
     ...
     plugins: [
         ...
-        HandlebarsCompiler({
+        handlebarsCompiler({
 
             /* Rollup Plugin Handlebars Compiler Options */
 
@@ -129,7 +129,7 @@ To pass global data accessible by all templates, simply pass an object to `templ
 export default {
     plugins: [
         ...
-        HandlebarsCompiler({
+        handlebarsCompiler({
             templateData: {
                 firstname: 'John',
                 lastname: 'Doe'
@@ -192,7 +192,7 @@ export default {
     ...
     plugins: [
         ...
-        HandlebarsCompiler({
+        handlebarsCompiler({
             helpers: {
                 fullname,
                 list,
@@ -217,7 +217,7 @@ To register through plugin options, simply pass the partial content with the par
 export default {
     plugins: [
         ...
-        HandlebarsCompiler({
+        handlebarsCompiler({
             partials: {
                 titlePartial: `<h1>{{Title}}</h1>`
             },
@@ -252,7 +252,7 @@ For example:
 export default {
     plugins: [
         ...
-        HandlebarsCompiler({
+        handlebarsCompiler({
             partials: {
                 'partials/template': `<h1>I am from the plugin options</h1>`
             },
