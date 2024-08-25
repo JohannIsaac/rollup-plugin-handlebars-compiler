@@ -1,133 +1,68 @@
 import path from 'path';
-import fs from 'fs';
 
 import Handlebars from 'handlebars';
 
-import type { SourceData, CompiledData, Helper } from './types'
+import type { CompilerResult, SourceDataMap } from './types'
 import { HandlebarsPluginOptions, TemplateSpecification } from './types';
+import PartialsProcessor from './partials-processor';
+import OptionsProcessor from './options-processor';
+import { SourceMapParser } from './source-map-parser';
 
 export default class HandlebarsCompiler {
     handlebarsPluginOptions: HandlebarsPluginOptions
     cache: Map<string, string>
+	watchFiles: string[]
 
     constructor(handlebarsPluginOptions: HandlebarsPluginOptions) {
         this.handlebarsPluginOptions = handlebarsPluginOptions
         this.cache = new Map();
+        this.watchFiles = [];
     }
 
-    static renamePartial(source: string, partialName: string, newPartialName: string) {
-        source = source.replaceAll(new RegExp(`(\\{\\{>(\\n|\\s)*)(${partialName})`, 'g'), `$1${newPartialName} `)
-        return source
-    }
-
-	static getPartialSource(partialPath: string, genesisFileDirectory: string, currentFile: string): string | undefined {
-		const relativeFileDirectory = path.dirname(currentFile)
-		const relativePartialPath = path.join(relativeFileDirectory, partialPath)
-		const partialAbsolutePath = path.resolve(genesisFileDirectory, `${relativePartialPath}.hbs`)
-		let partialSource: string | undefined
-		try {
-			partialSource = fs.readFileSync(partialAbsolutePath, 'utf-8');
-		} catch (e) {
-			const fileWithError = path.join(genesisFileDirectory, currentFile)
-			console.error(`\x1b[31mPartial \x1b[1m${partialPath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
-			console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
-		}
-		return partialSource
-	}
-
-    static ImportScanner = class extends Handlebars.Visitor {
-        partials: Set<string>;
-        helpers: Set<string>;
-    
-        constructor() {
-            super();
-            this.partials = new Set<string>();
-            this.helpers = new Set<string>();
-        }
-    
-        PartialStatement(partial: hbs.AST.PartialStatement): void {
-            if (partial.name && partial.name.type === 'PathExpression') {
-                this.partials.add(partial.name.original);
-                return super.PartialStatement(partial);
-            } else {
-                throw new Error('Dynamic partial resolution is not supported');
-            }
-        }
-    }
-
-	getCompiledPartial([partial, source]: SourceData) {
-		const compiled = Handlebars.precompile(source, this.handlebarsPluginOptions);
-        const compiledData: CompiledData = [partial, compiled]
-		return compiledData;
-	}
-
-	// Recursive function for getting nested partials with pathname
-	getPartialSources(name: string, source: string, genesisFileDirectory: string, list: SourceData[] = []) {
-		const filename = `${name}.hbs`
-		const relativeFileDirectory = path.dirname(name)
-
-		const tree = Handlebars.parse(source);
-		const scanner = new HandlebarsCompiler.ImportScanner();
-		scanner.accept(tree);
-
-		// Partials have been found
-		if (scanner.partials.size) {
-			for (const partialPath of scanner.partials) {
-
-				// Check if partial name is already registered in handlebarsPluginOptions
-				if (this.handlebarsPluginOptions.partials &&
-					typeof this.handlebarsPluginOptions.partials === 'object' &&
-					this.handlebarsPluginOptions.partials[partialPath]) {
-					continue
-				}
-
-				const partialSource = HandlebarsCompiler.getPartialSource(partialPath, genesisFileDirectory, filename)
-				// Skip if partial does not exist
-				if (!partialSource) continue
-				
-                const partialName = path.join(relativeFileDirectory, partialPath).replaceAll('\\', '/')
-                source = HandlebarsCompiler.renamePartial(source, partialPath, partialName)
-				list = this.getPartialSources(partialName, partialSource, genesisFileDirectory, list);
+	getWatchFiles(existingWatchFiles: string[]): string[] {
+		let files: Set<string> = new Set()
+		this.watchFiles.forEach(file => {
+			if (!existingWatchFiles.includes(file)) {
+				files.add(file)
 			}
-		}
-        const sourceData: SourceData = [name, source]
-        list.push(sourceData)
-
-		return list;
-	}
-
-	getHelpers() {
-		let helpers: Helper[] = []
-		if (!this.handlebarsPluginOptions || !this.handlebarsPluginOptions.helpers || typeof this.handlebarsPluginOptions.helpers !== 'object') return helpers
-		helpers = Object.entries(this.handlebarsPluginOptions.helpers).filter(([helper, fn]) => typeof fn === 'function')
-		return helpers
-	}
-
-	getPartials() {
-		let partials: SourceData[] = []
-		if (!this.handlebarsPluginOptions || !this.handlebarsPluginOptions.partials || typeof this.handlebarsPluginOptions.partials !== 'object') return partials
-		partials = Object.entries(this.handlebarsPluginOptions.partials).filter(([partial, source]) => typeof source === 'string')
-		return partials
+		})
+		return Array.from(files)
 	}
 
 	// Convert to ESM and register partial
-	toEsm(source: string, id: string): TemplateSpecification {
+	toEsm(source: string, id: string): CompilerResult {
 		const dir = path.dirname(id);
-		const name = path.basename(id, '.hbs');
+		const extname = path.extname(id)
+		const name = path.basename(id);
+		const basename = path.basename(id, extname);
 
 		// Get nested partials
-		const partials = this.getPartials()
-		const partialsByPaths = this.getPartialSources(name, source, dir);
-		partials.push(...partialsByPaths)
-        const templateData = partials.find(([partial, source]) => partial === name)
+		const options = new OptionsProcessor(this.handlebarsPluginOptions)
+		const partials = options.getPartials()
+
+		const partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions)
+		const partialsSourceMap = partialsProcessor.getSourceMap({
+			name,
+			source,
+			rootFile: id
+		});
+
+		const parsedSourceMap = new SourceMapParser(partialsSourceMap)
+
+		this.watchFiles = parsedSourceMap.getFiles(dir, extname)
+
+		partials.push(...partialsSourceMap)
+        const templateData = partials.find(([partial, source]) => {
+			return partial === basename
+		})
 		
 		const children = [];
 		
 		for (const [partial, source] of partials) {
-			children.push(this.getCompiledPartial([partial, source]));
+			children.push(partialsProcessor.getCompiledPartial([partial, source]));
 		}
 		
-		const helpers = this.getHelpers()
+		const helpers = options.getHelpers()
 
 		// Create a tree
 		const tree = Handlebars.parse(templateData[1], { srcName: name });

@@ -1,10 +1,10 @@
-import type { CompilerResult } from './types';
+import type { SourceData, Helper } from './types';
 import { HandlebarsPluginOptions } from './types';
-export default class HandlebarsCompiler {
+export default class OptionsProcessor {
     handlebarsPluginOptions: HandlebarsPluginOptions;
     cache: Map<string, string>;
     watchFiles: string[];
     constructor(handlebarsPluginOptions: HandlebarsPluginOptions);
-    getWatchFiles(existingWatchFiles: string[]): string[];
-    toEsm(source: string, id: string): CompilerResult;
+    getPartials(): SourceData[];
+    getHelpers(): Helper[];
 }

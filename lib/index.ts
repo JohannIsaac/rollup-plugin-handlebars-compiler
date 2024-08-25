@@ -11,17 +11,12 @@ export default function handlebarsCompilerPlugin(handlebarsPluginOptions?: Handl
 
 		transform(source, id) {
 			if (/\.(hbs|handlebars)/.test(id)) {
-				// Get from cache when avalaible
-				if (compiler.cache.has(id)) {
-                    try {
-                        return JSON.parse(compiler.cache.get(id));
-                    } catch (e) {}
-				}
-
 				const output = compiler.toEsm(source, id);
-
-				compiler.cache.set(id, JSON.stringify(output));
-
+				const existingWatchFiles = this.getWatchFiles()
+				const watchFiles = compiler.getWatchFiles(existingWatchFiles);
+				watchFiles.forEach((file: string) => {
+					this.addWatchFile(file)
+				})
 				return output;
 			}
 
