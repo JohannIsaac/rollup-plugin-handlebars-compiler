@@ -70,13 +70,11 @@ export default class PartialsProcessor {
 	}
 
 	private getAllPartials(source: string): Set<string> {
-
 		const tree = Handlebars.parse(source);
 		const scanner = new PartialsProcessor.ImportScanner();
 		scanner.accept(tree);
 		const partials = !!scanner.partials.size && scanner.partials
 		return partials;
-
 	}
 
 	// Process a partial then recursively process further nested partials

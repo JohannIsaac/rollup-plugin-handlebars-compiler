@@ -4,7 +4,6 @@ import path from 'path';
 import Handlebars from 'handlebars';
 
 import { CompileResult, TemplateSpecification } from './types/handlebars';
-import { SourceData } from './types/source-map';
 
 type CompiledData = [string, TemplateSpecification]
 
@@ -20,50 +19,53 @@ export default class HandlebarsCompiler {
         })
     }
 
-	getCompiledPartial([partial, source]: SourceData) {
-		const compiled = Handlebars.precompile(source, this.compileOptions);
-        const compiledData: CompiledData = [partial, compiled]
-		return compiledData;
+	private getCompiledPartials(): CompiledData[] {
+		const compiledPartials = [];
+		for (const [partial, source] of this.partials) {
+			const compiled = Handlebars.precompile(source, this.compileOptions);
+			const compiledData: CompiledData = [partial, compiled]
+			compiledPartials.push(compiledData);
+		}
+		return compiledPartials
 	}
 
-	// Convert to ESM and register partial
-	getTemplateSpecs(id: string): CompileResult {
-		const extname = path.extname(id)
-		const name = path.basename(id);
-		const basename = path.basename(id, extname)
+	private getTemplateSpecs(file: string): TemplateSpecification {
+		const extname = path.extname(file)
+		const name = path.basename(file);
+		const basename = path.basename(file, extname)
 
         const compiledTemplateData = this.partials.find(([partial]) => {
 			return partial === basename
 		})
 		if (!compiledTemplateData) {
-			console.error('Error parsing template', id)
+			console.error('Error parsing template', file)
 			return
 		}
 		const [templateName, compiledTemplate] = compiledTemplateData
-		
-		const children = [];
-		
-		for (const [partial, source] of this.partials) {
-			children.push(this.getCompiledPartial([partial, source]));
-		}
-		
-		const helpers = this.helpers
 
 		// Create a tree
-		const tree = Handlebars.parse(compiledTemplate, { srcName: name });
-
         const precompileOptions: PrecompileOptions = Object.assign({}, this.compileOptions)
         precompileOptions.srcName = name
-		const { code, map }: TemplateSpecification = Handlebars.precompile(tree, precompileOptions);
+		const tree = Handlebars.parse(compiledTemplate, { srcName: name });
+		const templateSpecs: TemplateSpecification = Handlebars.precompile(tree, precompileOptions);
 
+        return templateSpecs
+	}
+
+	// Compile handlebars file to ESM
+	compile(file: string): CompileResult {
+		const compiledPartials = this.getCompiledPartials()
+		const helpers = this.helpers
 		const templateData = this.templateData
+
+		const { code, map } = this.getTemplateSpecs(file)
 
 		// Import this (partial) template and nested templates
 		const body = `
 			import Handlebars from 'handlebars/runtime.js';
 			const template = Handlebars.template(${code});
 			${helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
-			${children.map(([partial, compiled]) => `Handlebars.registerPartial('${partial}', Handlebars.template(${compiled}));`).join('\n')}
+			${compiledPartials.map(([partial, compiled]) => `Handlebars.registerPartial('${partial}', Handlebars.template(${compiled}));`).join('\n')}
 			export default (data, options) => {
 				if (!data || typeof data !== 'object') {
 					data = {}

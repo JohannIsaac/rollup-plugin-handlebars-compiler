@@ -29,37 +29,37 @@ export default class HandlebarsTransformer {
 	}
 
 	// Convert to ESM and register partial
-	transform(source: string, id: string): CompileResult {
+	transform(source: string, file: string): CompileResult {
 		
-		const partialsSourceMap = this.getPartialsSourceMap(source, id)
+		const partialsSourceMap = this.getPartialsSourceMap(source, file)
 		const partialEntries = this.processPartialsSourceMap(source, partialsSourceMap)
 
 		const parsedOptions = pluginOptions.parse(this.handlebarsPluginOptions)
 		parsedOptions.partials.push(...partialEntries)
 
 		const compiler = new HandlebarsCompiler(parsedOptions)
-		const data = compiler.getTemplateSpecs(id)
+		const data = compiler.compile(file)
 
 		return data
 	}
 
-	private getPartialsSourceMap(source: string, id: string) {
-		const name = path.basename(id);
+	private getPartialsSourceMap(source: string, file: string) {
+		const name = path.basename(file);
 
 		const partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions)
 		const partialsSourceMap = partialsProcessor.getSourceMap({
 			name,
 			source,
-			rootFile: id
+			rootFile: file
 		});
 
 		return partialsSourceMap
 	}
 
-	private processPartialsSourceMap(id: string, sourceMap: SourceMap) {
+	private processPartialsSourceMap(file: string, sourceMap: SourceMap) {
 		
-		const dir = path.dirname(id);
-		const extname = path.extname(id)
+		const dir = path.dirname(file);
+		const extname = path.extname(file)
 
 		this.files = sourceMap.getFiles(dir, extname)
 		const partialEntries = sourceMap.getEntries()
