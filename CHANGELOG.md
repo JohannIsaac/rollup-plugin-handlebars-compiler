@@ -92,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Complete source code refactor
+- Source code refactor
 - Changed Rollup config to bundle types declaration file
 - Support for `--watch` flag for nested partials
 - Improved organization of types
