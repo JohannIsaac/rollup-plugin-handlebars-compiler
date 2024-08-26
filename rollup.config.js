@@ -1,7 +1,10 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonJS from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import mv from "rollup-plugin-mv";
+import dts from 'rollup-plugin-dts';
+import del from 'rollup-plugin-delete';
+
+const IS_DEVELOPMENT = process.env.BUILD === 'development'
 
 const CONFIG_TEMPLATE = {
     input: 'lib/index.ts',
@@ -11,61 +14,63 @@ const CONFIG_TEMPLATE = {
     ]
 }
 
-const ALT_CONFIG = {
+const MAIN_CONFIG = {
     output: [
         {
-            file: `dist/cjs.js`,
+            dir: `dist/es`,
+            format: 'es'
+        },
+        {
+            dir: `dist/cjs`,
             format: 'cjs'
         }
     ],
     plugins: [
-        typescript()
+        typescript({
+            declaration: false
+        })
     ]
 }
 
-const MAIN_CONFIG = {
+const DECLARATION_CONFIG = {
+    // Dummy output to be deleted
     output: {
-        file: `dist/es.js`,
+        dir: `dist/types`,
         format: 'es'
     },
     plugins: [
         typescript({
             declaration: true,
-            declarationDir: "types"
-        }),
-        mv([
-            {
-                src: `dist/cjs.js`,
-                dest: `dist/cjs/index.js`,
-                overwrite: true,
-            },
-            {
-                src: `dist/es.js`,
-                dest: `dist/es/index.js`,
-                overwrite: true,
-            },
-            {
-                src: `dist/types/lib`,
-                dest: `types`,
-                overwrite: true,
-            }
-        ])
+            declarationDir: "./dist/types",
+            include: [
+                "lib/**"
+            ]
+        })
     ]
+}
+
+const TYPES_CONFIG = {
+    input: './dist/types/index.d.ts',
+    output: [{ file: 'types/index.d.ts', format: 'es' }],
+    plugins: [
+        dts(),
+        del({ hook: "buildEnd", targets: "./dist/types" })
+    ],
 }
 
 function configs() {
     let configs = {}
-    configs.others = Object.assign({}, ALT_CONFIG)
-    configs.main = Object.assign({}, MAIN_CONFIG)
+    configs.others = Object.assign({}, CONFIG_TEMPLATE, MAIN_CONFIG)
+    configs.declaration = Object.assign({}, CONFIG_TEMPLATE, DECLARATION_CONFIG)
+    configs.type = Object.assign({}, TYPES_CONFIG)
 
-    configs.others = Object.assign({}, CONFIG_TEMPLATE, configs.others)
-    configs.main = Object.assign({}, CONFIG_TEMPLATE, configs.main)
     configs.others.plugins.push(...CONFIG_TEMPLATE.plugins)
-    configs.main.plugins.push(...CONFIG_TEMPLATE.plugins)
+    configs.declaration.plugins.push(...CONFIG_TEMPLATE.plugins)
 
     let parsedConfigs = []
     parsedConfigs.push(configs.others)
-    parsedConfigs.push(configs.main)
+    !IS_DEVELOPMENT && parsedConfigs.push(configs.declaration)
+    !IS_DEVELOPMENT && parsedConfigs.push(configs.type)
 
     return parsedConfigs
 }
