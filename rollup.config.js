@@ -7,6 +7,9 @@ import del from 'rollup-plugin-delete';
 const IS_DEVELOPMENT = process.env.BUILD === 'development'
 
 const CONFIG_TEMPLATE = {
+    external: [
+        'handlebars'
+    ],
     input: 'lib/index.ts',
     plugins: [
         nodeResolve(),
