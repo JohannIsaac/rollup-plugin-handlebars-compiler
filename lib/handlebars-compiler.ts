@@ -1,69 +1,78 @@
-import path from 'path';
-import PartialsProcessor from './partials-processor';
-import pluginOptions from './plugin-options';
+import * as ParsedOptions from './types/plugin-options/parsed';
 
-import { HandlebarsPluginOptions } from './types/plugin-options';
-import { CompileResult } from './types/handlebars';
-import Transformer from './transformer';
-import { SourceMap } from './source-map';
+import path from 'path';
+import Handlebars from 'handlebars';
+
+import { CompileResult, TemplateSpecification } from './types/handlebars';
+import { SourceData } from './types/source-map';
+
+type CompiledData = [string, TemplateSpecification]
 
 export default class HandlebarsCompiler {
-    handlebarsPluginOptions: HandlebarsPluginOptions
-    cache: Map<string, string>
-	files: string[]
+    compileOptions: CompileOptions
+    partials: ParsedOptions.Partials
+    helpers: ParsedOptions.Helpers
+    templateData: ParsedOptions.TemplateData
 
-    constructor(handlebarsPluginOptions: HandlebarsPluginOptions) {
-        this.handlebarsPluginOptions = handlebarsPluginOptions
-        this.cache = new Map();
-        this.files = [];
+    constructor(parsedOptions: ParsedOptions.IParsedOptions) {
+        Object.entries(parsedOptions).forEach(([key, value]) => {
+            this[key] = value
+        })
     }
 
-	getWatchFiles(existingWatchFiles: string[]): string[] {
-		const files: Set<string> = new Set()
-		this.files.forEach(file => {
-			if (!existingWatchFiles.includes(file)) {
-				files.add(file)
-			}
-		})
-		return Array.from(files)
+	getCompiledPartial([partial, source]: SourceData) {
+		const compiled = Handlebars.precompile(source, this.compileOptions);
+        const compiledData: CompiledData = [partial, compiled]
+		return compiledData;
 	}
 
 	// Convert to ESM and register partial
-	tramsformHbs(source: string, id: string): CompileResult {
-		
-		const partialsSourceMap = this.getPartialsSourceMap(source, id)
-		const partialEntries = this.processPartialsSourceMap(source, partialsSourceMap)
-
-		const parsedOptions = pluginOptions.parse(this.handlebarsPluginOptions)
-		parsedOptions.partials.push(...partialEntries)
-
-		const transformer = new Transformer(parsedOptions)
-		const data = transformer.getTemplateSpecs(id)
-
-		return data
-	}
-
-	private getPartialsSourceMap(source: string, id: string) {
-		const name = path.basename(id);
-
-		const partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions)
-		const partialsSourceMap = partialsProcessor.getSourceMap({
-			name,
-			source,
-			rootFile: id
-		});
-
-		return partialsSourceMap
-	}
-
-	private processPartialsSourceMap(id: string, sourceMap: SourceMap) {
-		
-		const dir = path.dirname(id);
+	getTemplateSpecs(id: string): CompileResult {
 		const extname = path.extname(id)
+		const name = path.basename(id);
+		const basename = path.basename(id, extname)
 
-		this.files = sourceMap.getFiles(dir, extname)
-		const partialEntries = sourceMap.getEntries()
-		return partialEntries
+        const compiledTemplateData = this.partials.find(([partial]) => {
+			return partial === basename
+		})
+		if (!compiledTemplateData) {
+			console.error('Error parsing template', id)
+			return
+		}
+		const [templateName, compiledTemplate] = compiledTemplateData
+		
+		const children = [];
+		
+		for (const [partial, source] of this.partials) {
+			children.push(this.getCompiledPartial([partial, source]));
+		}
+		
+		const helpers = this.helpers
 
+		// Create a tree
+		const tree = Handlebars.parse(compiledTemplate, { srcName: name });
+
+        const precompileOptions: PrecompileOptions = Object.assign({}, this.compileOptions)
+        precompileOptions.srcName = name
+		const { code, map }: TemplateSpecification = Handlebars.precompile(tree, precompileOptions);
+
+		const templateData = this.templateData
+
+		// Import this (partial) template and nested templates
+		const body = `
+			import Handlebars from 'handlebars/runtime.js';
+			const template = Handlebars.template(${code});
+			${helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
+			${children.map(([partial, compiled]) => `Handlebars.registerPartial('${partial}', Handlebars.template(${compiled}));`).join('\n')}
+			export default (data, options) => {
+				if (!data || typeof data !== 'object') {
+					data = {}
+				}
+				let templateData = Object.assign({}, ${JSON.stringify(templateData)}, data)
+				return template(templateData, options)
+			};
+		`;
+
+        return { code: body, map }
 	}
 }

@@ -8342,95 +8342,95 @@ var PartialsProcessor = /** @class */ (function () {
     function PartialsProcessor(handlebarsPluginOptions) {
         this.handlebarsPluginOptions = handlebarsPluginOptions;
     }
-    PartialsProcessor.renamePartial = function (source, partialName, newPartialName) {
-        source = source.replaceAll(new RegExp("(\\{\\{>(\\n|\\s)*)(".concat(partialName, ")"), 'g'), "$1".concat(newPartialName, " "));
-        return source;
-    };
-    PartialsProcessor.getPartialSource = function (partialPath, currentFilepath, genesisFileDirectory) {
-        var relativeFileDirectory = path.dirname(currentFilepath);
-        var relativePartialPath = path.join(relativeFileDirectory, partialPath);
-        var partialAbsolutePath = path.resolve(genesisFileDirectory, relativePartialPath);
-        var partialSource;
-        try {
-            partialSource = require$$2.readFileSync(partialAbsolutePath, 'utf-8');
-        }
-        catch (e) {
-            var fileWithError = path.join(genesisFileDirectory, currentFilepath);
-            console.error("\u001B[31mPartial \u001B[1m".concat(partialAbsolutePath, "\u001B[0m\u001B[31m does not exist\u001B[0m"));
-            console.error("\t\u001B[2mError in ".concat(fileWithError, "\u001B[0m"));
-        }
-        return partialSource;
-    };
-    PartialsProcessor.getCompiledPartial = function (_a, compileOptions) {
-        var _b = __read(_a, 2), partial = _b[0], source = _b[1];
-        var compiled = Handlebars.precompile(source, compileOptions);
-        var compiledData = [partial, compiled];
-        return compiledData;
+    PartialsProcessor.prototype.getSourceMap = function (templateData) {
+        var map = this.getMap(templateData);
+        var sourceMap = new SourceMap(map);
+        return sourceMap;
     };
     // Recursive function for getting nested partials with pathname
     PartialsProcessor.prototype.getMap = function (templateData, sourceMap) {
+        var _this = this;
         if (sourceMap === void 0) { sourceMap = new Map(); }
+        // If partials are detected, process each partial
+        var partials = this.getAllPartials(templateData.source);
+        if (partials)
+            partials.forEach(function (partialPath) { return _this.processPartial(partialPath, templateData, sourceMap); });
+        // Add current template to source-map with re-written templateData.source
+        // processPartial resolves partial instance paths for the templateData.source
         var extname = path.extname(templateData.name);
         var templateName = templateData.name.replace(new RegExp("".concat(extname, "$")), '');
-        var tree = Handlebars.parse(templateData.source);
-        var scanner = new PartialsProcessor.ImportScanner();
-        scanner.accept(tree);
-        this.processPartials(scanner.partials, templateData, sourceMap);
         sourceMap.set(templateName, templateData.source);
         return sourceMap;
     };
-    PartialsProcessor.prototype.processPartials = function (partials, templateData, sourceMap) {
-        var e_1, _a;
-        // Partials have been found
-        if (partials.size) {
-            try {
-                for (var partials_1 = __values(partials), partials_1_1 = partials_1.next(); !partials_1_1.done; partials_1_1 = partials_1.next()) {
-                    var partialPath = partials_1_1.value;
-                    this.processPartial(partialPath, templateData, sourceMap);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (partials_1_1 && !partials_1_1.done && (_a = partials_1.return)) _a.call(partials_1);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-        }
+    PartialsProcessor.prototype.getAllPartials = function (source) {
+        var tree = Handlebars.parse(source);
+        var scanner = new PartialsProcessor.ImportScanner();
+        scanner.accept(tree);
+        var partials = !!scanner.partials.size && scanner.partials;
+        return partials;
     };
     // Process a partial then recursively process further nested partials
     PartialsProcessor.prototype.processPartial = function (partialPath, templateData, sourceMap) {
+        // Skip if partial does not exist
+        var partialSource = this.resolvePartialSource(partialPath, templateData);
+        if (!partialSource)
+            return;
+        // Resolve the partial path relative to the root file
+        var resolvedPartialPath = this.resolvePartialFilepath(partialPath, templateData);
+        // Rewrite the original source to be passed to final source map
+        templateData.source = this.renamePartialInstances(templateData.source, partialPath, resolvedPartialPath);
+        // Get the nested partials
+        var partialTemplateData = {
+            name: resolvedPartialPath,
+            source: partialSource,
+            rootFile: templateData.rootFile
+        };
+        this.getMap(partialTemplateData, sourceMap);
+    };
+    // Process a partial then recursively process further nested partials
+    PartialsProcessor.prototype.resolvePartialSource = function (partialPath, templateData) {
         // Check if partial name is already registered in handlebarsPluginOptions
         if (this.handlebarsPluginOptions.partials &&
             typeof this.handlebarsPluginOptions.partials === 'object' &&
             this.handlebarsPluginOptions.partials[partialPath]) {
             return;
         }
+        var partialSource = this.getPartialSource(partialPath, templateData);
+        return partialSource;
+    };
+    PartialsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
         var rootFileDirectory = path.dirname(templateData.rootFile);
+        var currentFilepath = templateData.name;
+        var extname = path.extname(currentFilepath);
+        var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
+        var relativeFileDirectory = path.dirname(currentFilepath);
+        var relativePartialPath = path.join(relativeFileDirectory, partialFilepath);
+        var partialAbsolutePath = path.resolve(rootFileDirectory, relativePartialPath);
+        var partialSource;
+        try {
+            partialSource = require$$2.readFileSync(partialAbsolutePath, 'utf-8');
+        }
+        catch (e) {
+            var fileWithError = path.join(rootFileDirectory, currentFilepath);
+            console.error("\u001B[31mPartial \u001B[1m".concat(partialAbsolutePath, "\u001B[0m\u001B[31m does not exist\u001B[0m"));
+            console.error("\t\u001B[2mError in ".concat(fileWithError, "\u001B[0m"));
+        }
+        return partialSource;
+    };
+    PartialsProcessor.prototype.resolvePartialFilepath = function (partialPath, templateData) {
         var extname = path.extname(templateData.name);
         var fileDirectory = path.dirname(templateData.name);
         var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
-        var partialSource = PartialsProcessor.getPartialSource(partialFilepath, templateData.name, rootFileDirectory);
-        // Skip if partial does not exist
-        if (!partialSource)
-            return;
         // Process partials with paths nested to the current filepath
         var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
-        var nestedPartialName = nestedPartialFilePath.replace(new RegExp("".concat(extname, "$")), '');
-        // Rewrite the original source to be passed to final source map
-        templateData.source = PartialsProcessor.renamePartial(templateData.source, partialPath, nestedPartialName);
-        // Get the nested partials
-        var partialData = {
-            name: nestedPartialFilePath,
-            source: partialSource,
-            rootFile: templateData.rootFile
-        };
-        this.getMap(partialData, sourceMap);
+        return nestedPartialFilePath;
     };
-    PartialsProcessor.prototype.getSourceMap = function (templateData) {
-        var map = this.getMap(templateData);
-        var sourceMap = new SourceMap(map);
-        return sourceMap;
+    // Rewrite the original source to be passed to final source map
+    PartialsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
+        var extname = path.extname(resolvedPartialPath);
+        var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
+        source = source.replaceAll(new RegExp("(\\{\\{>(\\n|\\s)*)(".concat(fromName, ")"), 'g'), "$1".concat(resolvedPartialName, " "));
+        return source;
     };
     PartialsProcessor.ImportScanner = /** @class */ (function (_super) {
         __extends(class_1, _super);
@@ -8544,16 +8544,22 @@ function getTemplateData(optionsTemplateData) {
     return tempalteData;
 }
 
-var Transformer = /** @class */ (function () {
-    function Transformer(parsedOptions) {
+var HandlebarsCompiler = /** @class */ (function () {
+    function HandlebarsCompiler(parsedOptions) {
         var _this = this;
         Object.entries(parsedOptions).forEach(function (_a) {
             var _b = __read(_a, 2), key = _b[0], value = _b[1];
             _this[key] = value;
         });
     }
+    HandlebarsCompiler.prototype.getCompiledPartial = function (_a) {
+        var _b = __read(_a, 2), partial = _b[0], source = _b[1];
+        var compiled = Handlebars.precompile(source, this.compileOptions);
+        var compiledData = [partial, compiled];
+        return compiledData;
+    };
     // Convert to ESM and register partial
-    Transformer.prototype.getTemplateSpecs = function (id) {
+    HandlebarsCompiler.prototype.getTemplateSpecs = function (id) {
         var e_1, _a;
         var extname = path.extname(id);
         var name = path.basename(id);
@@ -8571,7 +8577,7 @@ var Transformer = /** @class */ (function () {
         try {
             for (var _c = __values(this.partials), _d = _c.next(); !_d.done; _d = _c.next()) {
                 var _e = __read(_d.value, 2), partial = _e[0], source = _e[1];
-                children.push(PartialsProcessor.getCompiledPartial([partial, source], this.compileOptions));
+                children.push(this.getCompiledPartial([partial, source]));
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -8598,16 +8604,16 @@ var Transformer = /** @class */ (function () {
         }).join('\n'), "\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
         return { code: body, map: map };
     };
-    return Transformer;
+    return HandlebarsCompiler;
 }());
 
-var HandlebarsCompiler = /** @class */ (function () {
-    function HandlebarsCompiler(handlebarsPluginOptions) {
+var HandlebarsTransformer = /** @class */ (function () {
+    function HandlebarsTransformer(handlebarsPluginOptions) {
         this.handlebarsPluginOptions = handlebarsPluginOptions;
         this.cache = new Map();
         this.files = [];
     }
-    HandlebarsCompiler.prototype.getWatchFiles = function (existingWatchFiles) {
+    HandlebarsTransformer.prototype.getWatchFiles = function (existingWatchFiles) {
         var files = new Set();
         this.files.forEach(function (file) {
             if (!existingWatchFiles.includes(file)) {
@@ -8617,17 +8623,17 @@ var HandlebarsCompiler = /** @class */ (function () {
         return Array.from(files);
     };
     // Convert to ESM and register partial
-    HandlebarsCompiler.prototype.tramsformHbs = function (source, id) {
+    HandlebarsTransformer.prototype.transform = function (source, id) {
         var _a;
         var partialsSourceMap = this.getPartialsSourceMap(source, id);
         var partialEntries = this.processPartialsSourceMap(source, partialsSourceMap);
         var parsedOptions = pluginOptions.parse(this.handlebarsPluginOptions);
         (_a = parsedOptions.partials).push.apply(_a, __spreadArray([], __read(partialEntries), false));
-        var transformer = new Transformer(parsedOptions);
-        var data = transformer.getTemplateSpecs(id);
+        var compiler = new HandlebarsCompiler(parsedOptions);
+        var data = compiler.getTemplateSpecs(id);
         return data;
     };
-    HandlebarsCompiler.prototype.getPartialsSourceMap = function (source, id) {
+    HandlebarsTransformer.prototype.getPartialsSourceMap = function (source, id) {
         var name = path.basename(id);
         var partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions);
         var partialsSourceMap = partialsProcessor.getSourceMap({
@@ -8637,26 +8643,26 @@ var HandlebarsCompiler = /** @class */ (function () {
         });
         return partialsSourceMap;
     };
-    HandlebarsCompiler.prototype.processPartialsSourceMap = function (id, sourceMap) {
+    HandlebarsTransformer.prototype.processPartialsSourceMap = function (id, sourceMap) {
         var dir = path.dirname(id);
         var extname = path.extname(id);
         this.files = sourceMap.getFiles(dir, extname);
         var partialEntries = sourceMap.getEntries();
         return partialEntries;
     };
-    return HandlebarsCompiler;
+    return HandlebarsTransformer;
 }());
 
 function handlebarsCompilerPlugin(handlebarsPluginOptions) {
-    var compiler = new HandlebarsCompiler(handlebarsPluginOptions);
+    var hbsTransformer = new HandlebarsTransformer(handlebarsPluginOptions);
     return {
         name: 'handlebars-compiler',
         transform: function (source, id) {
             var _this = this;
             if (/\.(hbs|handlebars)/.test(id)) {
-                var output = compiler.tramsformHbs(source, id);
+                var output = hbsTransformer.transform(source, id);
                 var existingWatchFiles = this.getWatchFiles();
-                var watchFiles = compiler.getWatchFiles(existingWatchFiles);
+                var watchFiles = hbsTransformer.getWatchFiles(existingWatchFiles);
                 watchFiles.forEach(function (file) {
                     _this.addWatchFile(file);
                 });
