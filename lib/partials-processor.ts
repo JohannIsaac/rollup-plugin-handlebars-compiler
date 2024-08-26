@@ -1,10 +1,21 @@
 import path from 'path';
 import fs from 'fs';
-
 import Handlebars from 'handlebars';
 
-import type { CompiledData, SourceData, SourceDataMap, TemplateData } from './types'
-import { HandlebarsPluginOptions } from './types';
+import { SourceMap } from './source-map';
+
+import { HandlebarsPluginOptions } from './types/plugin-options';
+import { TemplateSpecification } from './types/handlebars';
+import type { SourceData, SourceDataMap } from './types/source-map';
+
+
+type CompiledData = [string, TemplateSpecification]
+
+interface TemplateData {
+    name: string,
+    source: string,
+    rootFile: string
+}
 
 export default class PartialsProcessor {
     handlebarsPluginOptions: HandlebarsPluginOptions
@@ -44,7 +55,7 @@ export default class PartialsProcessor {
         }
     
         PartialStatement(partial: hbs.AST.PartialStatement): void {
-            if (partial.name && partial.name.type === 'PathExpression') {
+            if (partial.name?.type === 'PathExpression') {
                 this.partials.add(partial.name.original);
                 return super.PartialStatement(partial);
             } else {
@@ -63,22 +74,14 @@ export default class PartialsProcessor {
 
 
 
-    getFilesFromSourceMap(directory: string, extname: string, sourceMap: SourceDataMap): string[] {
-		let filepaths = Array.from(sourceMap.keys())
-		let absoluteFilepaths = filepaths.map((filepath) => {
-			const dir = path.dirname(filepath);
-			const name = path.basename(filepath, extname);
-			const absoluteFilepath = path.join(dir, name)
-			return path.join(directory, absoluteFilepath)
-		})
-		let uniqueFiles = [...new Set(absoluteFilepaths)]
-		return uniqueFiles
-	}
-
-
+    getSourceMap(templateData: TemplateData) {
+        const map = this.getMap(templateData)
+        const sourceMap = new SourceMap(map)
+        return sourceMap
+    }
 
 	// Recursive function for getting nested partials with pathname
-	getSourceMap(templateData: TemplateData, sourceMap: SourceDataMap = new Map): SourceDataMap {
+	getMap(templateData: TemplateData, sourceMap: SourceDataMap = new Map()): SourceDataMap {
 		const extname = path.extname(templateData.name)
 		const templateName = templateData.name.replace(new RegExp(`${extname}$`), '')
 
@@ -92,7 +95,7 @@ export default class PartialsProcessor {
 		return sourceMap;
 	}
 
-	processPartials(partials: Set<string>, templateData: TemplateData, sourceMap: SourceDataMap = new Map): void {
+	processPartials(partials: Set<string>, templateData: TemplateData, sourceMap: SourceDataMap): void {
 		// Partials have been found
 		if (partials.size) {
 			for (const partialPath of partials) {
@@ -102,7 +105,7 @@ export default class PartialsProcessor {
 	}
 
 	// Process a partial then recursively process further nested partials
-	processPartial(partialPath: string, templateData: TemplateData, sourceMap: SourceDataMap = new Map): string {
+	processPartial(partialPath: string, templateData: TemplateData, sourceMap: SourceDataMap): string {
 
 		// Check if partial name is already registered in handlebarsPluginOptions
 		if (this.handlebarsPluginOptions.partials &&
@@ -133,6 +136,6 @@ export default class PartialsProcessor {
 			source: partialSource,
 			rootFile: templateData.rootFile
 		}
-		this.getSourceMap(partialData, sourceMap);
+		this.getMap(partialData, sourceMap);
 	}
 }

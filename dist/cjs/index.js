@@ -2833,7 +2833,7 @@ function preparePartialBlock(open, program, close, locInfo) {
 
 base.__esModule = true;
 base.parseWithoutProcessing = parseWithoutProcessing;
-base.parse = parse;
+base.parse = parse$1;
 // istanbul ignore next
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
@@ -2879,7 +2879,7 @@ function parseWithoutProcessing(input, options) {
   return ast;
 }
 
-function parse(input, options) {
+function parse$1(input, options) {
   var ast = parseWithoutProcessing(input, options);
   var strip = new _whitespaceControl2['default'](options);
 
@@ -8312,6 +8312,34 @@ if (typeof commonjsRequire !== 'undefined' && commonjsRequire.extensions) {
 
 var Handlebars = /*@__PURE__*/getDefaultExportFromCjs(lib);
 
+var SourceMap = /** @class */ (function () {
+    function SourceMap(map) {
+        var _this = this;
+        var sources = Array.from(map);
+        sources.forEach(function (_a) {
+            var _b = __read(_a, 2), filename = _b[0], source = _b[1];
+            _this[filename] = source;
+        });
+    }
+    SourceMap.prototype.getFiles = function (directory, extname) {
+        var filepaths = Array.from(Object.keys(this));
+        var absoluteFilepaths = filepaths.map(function (filepath) {
+            var dir = path.dirname(filepath);
+            var basename = path.basename(filepath);
+            var name = "".concat(basename).concat(extname);
+            var absoluteFilepath = path.join(dir, name);
+            return path.join(directory, absoluteFilepath);
+        });
+        var uniqueFiles = __spreadArray([], __read(new Set(absoluteFilepaths)), false);
+        return uniqueFiles;
+    };
+    SourceMap.prototype.getEntries = function () {
+        var entries = Object.entries(this);
+        return entries;
+    };
+    return SourceMap;
+}());
+
 var PartialsProcessor = /** @class */ (function () {
     function PartialsProcessor(handlebarsPluginOptions) {
         this.handlebarsPluginOptions = handlebarsPluginOptions;
@@ -8341,20 +8369,14 @@ var PartialsProcessor = /** @class */ (function () {
         var compiledData = [partial, compiled];
         return compiledData;
     };
-    PartialsProcessor.prototype.getFilesFromSourceMap = function (directory, extname, sourceMap) {
-        var filepaths = Array.from(sourceMap.keys());
-        var absoluteFilepaths = filepaths.map(function (filepath) {
-            var dir = path.dirname(filepath);
-            var name = path.basename(filepath, extname);
-            var absoluteFilepath = path.join(dir, name);
-            return path.join(directory, absoluteFilepath);
-        });
-        var uniqueFiles = __spreadArray([], __read(new Set(absoluteFilepaths)), false);
-        return uniqueFiles;
+    PartialsProcessor.prototype.getSourceMap = function (templateData) {
+        var map = this.getMap(templateData);
+        var sourceMap = new SourceMap(map);
+        return sourceMap;
     };
     // Recursive function for getting nested partials with pathname
-    PartialsProcessor.prototype.getSourceMap = function (templateData, sourceMap) {
-        if (sourceMap === void 0) { sourceMap = new Map; }
+    PartialsProcessor.prototype.getMap = function (templateData, sourceMap) {
+        if (sourceMap === void 0) { sourceMap = new Map(); }
         var extname = path.extname(templateData.name);
         var templateName = templateData.name.replace(new RegExp("".concat(extname, "$")), '');
         var tree = Handlebars.parse(templateData.source);
@@ -8366,7 +8388,6 @@ var PartialsProcessor = /** @class */ (function () {
     };
     PartialsProcessor.prototype.processPartials = function (partials, templateData, sourceMap) {
         var e_1, _a;
-        if (sourceMap === void 0) { sourceMap = new Map; }
         // Partials have been found
         if (partials.size) {
             try {
@@ -8386,7 +8407,6 @@ var PartialsProcessor = /** @class */ (function () {
     };
     // Process a partial then recursively process further nested partials
     PartialsProcessor.prototype.processPartial = function (partialPath, templateData, sourceMap) {
-        if (sourceMap === void 0) { sourceMap = new Map; }
         // Check if partial name is already registered in handlebarsPluginOptions
         if (this.handlebarsPluginOptions.partials &&
             typeof this.handlebarsPluginOptions.partials === 'object' &&
@@ -8412,7 +8432,7 @@ var PartialsProcessor = /** @class */ (function () {
             source: partialSource,
             rootFile: templateData.rootFile
         };
-        this.getSourceMap(partialData, sourceMap);
+        this.getMap(partialData, sourceMap);
     };
     PartialsProcessor.ImportScanner = /** @class */ (function (_super) {
         __extends(class_1, _super);
@@ -8423,7 +8443,8 @@ var PartialsProcessor = /** @class */ (function () {
             return _this;
         }
         class_1.prototype.PartialStatement = function (partial) {
-            if (partial.name && partial.name.type === 'PathExpression') {
+            var _a;
+            if (((_a = partial.name) === null || _a === void 0 ? void 0 : _a.type) === 'PathExpression') {
                 this.partials.add(partial.name.original);
                 return _super.prototype.PartialStatement.call(this, partial);
             }
@@ -8436,52 +8457,68 @@ var PartialsProcessor = /** @class */ (function () {
     return PartialsProcessor;
 }());
 
-var OptionsProcessor = /** @class */ (function () {
-    function OptionsProcessor(handlebarsPluginOptions) {
-        this.handlebarsPluginOptions = handlebarsPluginOptions;
-        this.cache = new Map();
-        this.watchFiles = [];
-    }
-    OptionsProcessor.prototype.getPartials = function () {
-        var partials = [];
-        if (!this.handlebarsPluginOptions || !this.handlebarsPluginOptions.partials || typeof this.handlebarsPluginOptions.partials !== 'object')
-            return partials;
-        partials = Object.entries(this.handlebarsPluginOptions.partials).filter(function (_a) {
-            var _b = __read(_a, 2); _b[0]; var source = _b[1];
-            return typeof source === 'string';
-        });
+var optionsParser = { parse: parse };
+function parse(handlebarsPluginOptions) {
+    var parsedOptions = {
+        partials: getPartials(handlebarsPluginOptions.partials),
+        helpers: getHelpers(handlebarsPluginOptions.helpers),
+        templateData: getTemplateData(handlebarsPluginOptions.templateData)
+    };
+    return parsedOptions;
+}
+function getPartials(optionsPartials) {
+    var e_1, _a;
+    var partials = [];
+    if (typeof optionsPartials !== 'object') {
         return partials;
-    };
-    OptionsProcessor.prototype.getHelpers = function () {
-        var helpers = [];
-        if (!this.handlebarsPluginOptions || !this.handlebarsPluginOptions.helpers || typeof this.handlebarsPluginOptions.helpers !== 'object')
-            return helpers;
-        helpers = Object.entries(this.handlebarsPluginOptions.helpers).filter(function (_a) {
-            var _b = __read(_a, 2); _b[0]; var fn = _b[1];
-            return typeof fn === 'function';
-        });
-        return helpers;
-    };
-    return OptionsProcessor;
-}());
-
-var SourceMapParser = /** @class */ (function () {
-    function SourceMapParser(sourceMap) {
-        this.sourceMap = sourceMap;
     }
-    SourceMapParser.prototype.getFiles = function (directory, extname) {
-        var filepaths = Array.from(this.sourceMap.keys());
-        var absoluteFilepaths = filepaths.map(function (filepath) {
-            var dir = path.dirname(filepath);
-            var name = path.basename(filepath, extname);
-            var absoluteFilepath = path.join(dir, name);
-            return path.join(directory, absoluteFilepath);
-        });
-        var uniqueFiles = __spreadArray([], __read(new Set(absoluteFilepaths)), false);
-        return uniqueFiles;
-    };
-    return SourceMapParser;
-}());
+    try {
+        for (var _b = __values(Object.entries(optionsPartials)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var _d = __read(_c.value, 2), partial = _d[0], source = _d[1];
+            if (typeof source === 'string') {
+                partials.push([partial, source]);
+            }
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    return partials;
+}
+function getHelpers(optionsHelpers) {
+    var e_2, _a;
+    var helpers = [];
+    if (typeof optionsHelpers !== 'object') {
+        return helpers;
+    }
+    try {
+        for (var _b = __values(Object.entries(optionsHelpers)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var _d = __read(_c.value, 2), helper = _d[0], fn = _d[1];
+            if (typeof fn === 'function') {
+                helpers.push([helper, fn]);
+            }
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
+    return helpers;
+}
+function getTemplateData(optionsTemplateData) {
+    var tempalteData = {};
+    if (typeof optionsTemplateData !== 'object')
+        return tempalteData;
+    tempalteData = optionsTemplateData;
+    return tempalteData;
+}
 
 var HandlebarsCompiler = /** @class */ (function () {
     function HandlebarsCompiler(handlebarsPluginOptions) {
@@ -8505,19 +8542,19 @@ var HandlebarsCompiler = /** @class */ (function () {
         var extname = path.extname(id);
         var name = path.basename(id);
         var basename = path.basename(id, extname);
+        var parsedOptions = optionsParser.parse(this.handlebarsPluginOptions);
         // Get nested partials
-        var options = new OptionsProcessor(this.handlebarsPluginOptions);
-        var partials = options.getPartials();
+        var partials = __spreadArray([], __read(parsedOptions.partials), false);
         var partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions);
         var partialsSourceMap = partialsProcessor.getSourceMap({
             name: name,
             source: source,
             rootFile: id
         });
-        var parsedSourceMap = new SourceMapParser(partialsSourceMap);
-        this.watchFiles = parsedSourceMap.getFiles(dir, extname);
-        partials.push.apply(partials, __spreadArray([], __read(partialsSourceMap), false));
-        var templateData = partials.find(function (_a) {
+        this.watchFiles = partialsSourceMap.getFiles(dir, extname);
+        var partialEntries = partialsSourceMap.getEntries();
+        partials.push.apply(partials, __spreadArray([], __read(partialEntries), false));
+        var compiledTemplate = partials.find(function (_a) {
             var _b = __read(_a, 2), partial = _b[0]; _b[1];
             return partial === basename;
         });
@@ -8535,16 +8572,13 @@ var HandlebarsCompiler = /** @class */ (function () {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        var helpers = options.getHelpers();
+        var helpers = parsedOptions.helpers;
         // Create a tree
-        var tree = Handlebars.parse(templateData[1], { srcName: name });
+        var tree = Handlebars.parse(compiledTemplate[1], { srcName: name });
         var precompileOptions = Object.assign({}, this.handlebarsPluginOptions);
         precompileOptions.srcName = name;
         var _c = Handlebars.precompile(tree, precompileOptions), code = _c.code, map = _c.map;
-        var pluginTemplateData = {};
-        if (this.handlebarsPluginOptions && this.handlebarsPluginOptions.templateData && typeof this.handlebarsPluginOptions.templateData === 'object') {
-            pluginTemplateData = this.handlebarsPluginOptions.templateData;
-        }
+        var templateData = parsedOptions.templateData;
         // Import this (partial) template and nested templates
         var body = "\n\t\t\timport Handlebars from 'handlebars/runtime.js';\n\t\t\tconst template = Handlebars.template(".concat(code, ");\n\t\t\tHandlebars.registerPartial('").concat(name, "', template);\n\t\t\t").concat(helpers.map(function (_a) {
             var _b = __read(_a, 2), helper = _b[0], fn = _b[1];
@@ -8552,7 +8586,7 @@ var HandlebarsCompiler = /** @class */ (function () {
         }).join('\n'), "\n\t\t\t").concat(children.map(function (_a) {
             var _b = __read(_a, 2), partial = _b[0], compiled = _b[1];
             return "Handlebars.registerPartial('".concat(partial, "', Handlebars.template(").concat(compiled, "));");
-        }).join('\n'), "\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(pluginTemplateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
+        }).join('\n'), "\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
         return {
             code: body,
             map: map,
@@ -8563,8 +8597,17 @@ var HandlebarsCompiler = /** @class */ (function () {
 
 function handlebarsCompilerPlugin(handlebarsPluginOptions) {
     var compiler = new HandlebarsCompiler(handlebarsPluginOptions);
+    var changes = {};
     return {
         name: 'handlebars-compiler',
+        watchChange: function (id, change) {
+            for (var storedId in changes) {
+                if (storedId !== id) {
+                    delete changes[storedId];
+                }
+            }
+            changes[id] = change;
+        },
         transform: function (source, id) {
             var _this = this;
             if (/\.(hbs|handlebars)/.test(id)) {
@@ -8573,6 +8616,12 @@ function handlebarsCompilerPlugin(handlebarsPluginOptions) {
                 var watchFiles = compiler.getWatchFiles(existingWatchFiles);
                 watchFiles.forEach(function (file) {
                     _this.addWatchFile(file);
+                    var changeData = Object.entries(changes).find(function (_a) {
+                        var _b = __read(_a, 2), id = _b[0]; _b[1];
+                        return path.normalize(file) === path.normalize(id);
+                    });
+                    if (!changeData)
+                        return;
                 });
                 return output;
             }

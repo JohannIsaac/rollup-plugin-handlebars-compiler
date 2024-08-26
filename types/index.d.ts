@@ -1,3 +1,21 @@
-import type { Plugin } from 'rollup';
-import { HandlebarsPluginOptions } from './types';
-export default function handlebarsCompilerPlugin(handlebarsPluginOptions?: HandlebarsPluginOptions): Plugin;
+import { Plugin } from 'rollup';
+
+type TemplateData = object;
+type Helpers = {
+    [key: string]: () => {};
+};
+type Partials = {
+    [key: string]: string;
+};
+interface IPluginOptions {
+    helpers?: Helpers;
+    partials?: Partials;
+    templateData?: TemplateData;
+}
+
+interface HandlebarsPluginOptions extends CompileOptions, IPluginOptions {
+}
+
+declare function handlebarsCompilerPlugin(handlebarsPluginOptions?: HandlebarsPluginOptions): Plugin;
+
+export { handlebarsCompilerPlugin as default };

@@ -85,3 +85,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Cleaned up plugin source code into modules
+
+
+
+## 1.0.9 2020-8-25
+
+### Changed
+
+- Changed Rollup config to bundle types declaration file
+- Watch partials and check watch hook setup
+- Simplified passing of plugin options through a parser
+- Improved organization of types

@@ -1,12 +1,15 @@
 import path from 'path';
-
 import Handlebars from 'handlebars';
-
-import type { CompilerResult, SourceDataMap } from './types'
-import { HandlebarsPluginOptions, TemplateSpecification } from './types';
 import PartialsProcessor from './partials-processor';
-import OptionsProcessor from './options-processor';
-import { SourceMapParser } from './source-map-parser';
+import optionsParser from './options-parser';
+
+import { HandlebarsPluginOptions } from './types/plugin-options';
+import { TemplateSpecification } from './types/handlebars';
+
+interface CompilerResult {
+    code?: string;
+    map?: string;
+}
 
 export default class HandlebarsCompiler {
     handlebarsPluginOptions: HandlebarsPluginOptions
@@ -20,7 +23,7 @@ export default class HandlebarsCompiler {
     }
 
 	getWatchFiles(existingWatchFiles: string[]): string[] {
-		let files: Set<string> = new Set()
+		const files: Set<string> = new Set()
 		this.watchFiles.forEach(file => {
 			if (!existingWatchFiles.includes(file)) {
 				files.add(file)
@@ -36,9 +39,10 @@ export default class HandlebarsCompiler {
 		const name = path.basename(id);
 		const basename = path.basename(id, extname);
 
+		const parsedOptions = optionsParser.parse(this.handlebarsPluginOptions)
+
 		// Get nested partials
-		const options = new OptionsProcessor(this.handlebarsPluginOptions)
-		const partials = options.getPartials()
+		const partials = [...parsedOptions.partials]
 
 		const partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions)
 		const partialsSourceMap = partialsProcessor.getSourceMap({
@@ -47,12 +51,11 @@ export default class HandlebarsCompiler {
 			rootFile: id
 		});
 
-		const parsedSourceMap = new SourceMapParser(partialsSourceMap)
+		this.watchFiles = partialsSourceMap.getFiles(dir, extname)
 
-		this.watchFiles = parsedSourceMap.getFiles(dir, extname)
-
-		partials.push(...partialsSourceMap)
-        const templateData = partials.find(([partial, source]) => {
+		const partialEntries = partialsSourceMap.getEntries()
+		partials.push(...partialEntries)
+        const compiledTemplate = partials.find(([partial, source]) => {
 			return partial === basename
 		})
 		
@@ -62,19 +65,16 @@ export default class HandlebarsCompiler {
 			children.push(partialsProcessor.getCompiledPartial([partial, source]));
 		}
 		
-		const helpers = options.getHelpers()
+		const helpers = parsedOptions.helpers
 
 		// Create a tree
-		const tree = Handlebars.parse(templateData[1], { srcName: name });
+		const tree = Handlebars.parse(compiledTemplate[1], { srcName: name });
 
         const precompileOptions: PrecompileOptions = Object.assign({}, this.handlebarsPluginOptions)
         precompileOptions.srcName = name
 		const { code, map }: TemplateSpecification = Handlebars.precompile(tree, precompileOptions);
 
-		let pluginTemplateData = {}
-		if (this.handlebarsPluginOptions && this.handlebarsPluginOptions.templateData && typeof this.handlebarsPluginOptions.templateData === 'object') {
-			pluginTemplateData = this.handlebarsPluginOptions.templateData
-		}
+		const templateData = parsedOptions.templateData
 
 		// Import this (partial) template and nested templates
 		const body = `
@@ -87,7 +87,7 @@ export default class HandlebarsCompiler {
 				if (!data || typeof data !== 'object') {
 					data = {}
 				}
-				let templateData = Object.assign({}, ${JSON.stringify(pluginTemplateData)}, data)
+				let templateData = Object.assign({}, ${JSON.stringify(templateData)}, data)
 				return template(templateData, options)
 			};
 		`;
