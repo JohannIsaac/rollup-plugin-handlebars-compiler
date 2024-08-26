@@ -4,13 +4,29 @@ import type * as ParsedOptions from './types/plugin-options/parsed'
 
 export default { parse }
 
+const pluginOptionsKeys = [
+    'helpers',
+    'partials',
+    'templateData',
+]
+
 function parse(handlebarsPluginOptions: HandlebarsPluginOptions): ParsedOptions.IParsedOptions {
     const parsedOptions: ParsedOptions.IParsedOptions = {
+        compileOptions: getCompileOptions(handlebarsPluginOptions),
         partials: getPartials(handlebarsPluginOptions.partials),
         helpers: getHelpers(handlebarsPluginOptions.helpers),
         templateData: getTemplateData(handlebarsPluginOptions.templateData)
     }
     return parsedOptions
+}
+
+function getCompileOptions(handlebarsPluginOptions: PluginOptions.TemplateData): CompileOptions {
+    const compileOptions = {}
+    for (let [key, value] of Object.entries(handlebarsPluginOptions)) {
+        if (pluginOptionsKeys.includes(key)) continue
+        compileOptions[key] = value
+    }
+    return compileOptions
 }
 
 function getPartials(optionsPartials: PluginOptions.Partials) {

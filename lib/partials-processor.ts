@@ -17,12 +17,6 @@ interface TemplateData {
     rootFile: string
 }
 
-interface NewTemplateData {
-    name: string,
-    source: string,
-    rootFile: string
-}
-
 export default class PartialsProcessor {
     handlebarsPluginOptions: HandlebarsPluginOptions
 
@@ -72,22 +66,16 @@ export default class PartialsProcessor {
 
 
 
-    getCompiledPartial([partial, source]: SourceData) {
-		const compiled = Handlebars.precompile(source, this.handlebarsPluginOptions);
+    static getCompiledPartial([partial, source]: SourceData, compileOptions: CompileOptions) {
+		const compiled = Handlebars.precompile(source, compileOptions);
         const compiledData: CompiledData = [partial, compiled]
 		return compiledData;
 	}
 
 
 
-    getSourceMap(templateData: TemplateData) {
-        const map = this.getMap(templateData)
-        const sourceMap = new SourceMap(map)
-        return sourceMap
-    }
-
 	// Recursive function for getting nested partials with pathname
-	getMap(templateData: TemplateData, sourceMap: SourceDataMap = new Map()): SourceDataMap {
+	private getMap(templateData: TemplateData, sourceMap: SourceDataMap = new Map()): SourceDataMap {
 		const extname = path.extname(templateData.name)
 		const templateName = templateData.name.replace(new RegExp(`${extname}$`), '')
 
@@ -101,7 +89,7 @@ export default class PartialsProcessor {
 		return sourceMap;
 	}
 
-	processPartials(partials: Set<string>, templateData: TemplateData, sourceMap: SourceDataMap): void {
+	private processPartials(partials: Set<string>, templateData: TemplateData, sourceMap: SourceDataMap): void {
 		// Partials have been found
 		if (partials.size) {
 			for (const partialPath of partials) {
@@ -111,7 +99,7 @@ export default class PartialsProcessor {
 	}
 
 	// Process a partial then recursively process further nested partials
-	processPartial(partialPath: string, templateData: TemplateData, sourceMap: SourceDataMap): string {
+	private processPartial(partialPath: string, templateData: TemplateData, sourceMap: SourceDataMap): string {
 
 		// Check if partial name is already registered in handlebarsPluginOptions
 		if (this.handlebarsPluginOptions.partials &&
@@ -147,67 +135,9 @@ export default class PartialsProcessor {
 
 
 
-    getAllPartials(templateData: TemplateData) {
-        const set = this.newGetMap(templateData)
-        return set
+    getSourceMap(templateData: TemplateData) {
+        const map = this.getMap(templateData)
+        const sourceMap = new SourceMap(map)
+        return sourceMap
     }
-
-	// Recursive function for getting nested partials with pathname
-	newGetMap(templateData: TemplateData, set: Set<string> = new Set()) {
-		const extname = path.extname(templateData.name)
-		const templateName = templateData.name.replace(new RegExp(`${extname}$`), '')
-
-		const tree = Handlebars.parse(templateData.source);
-		const scanner = new PartialsProcessor.ImportScanner();
-		scanner.accept(tree);
-
-		this.newProcessPartials(scanner.partials, templateData, set)
-        set.add(templateName)
-
-		return set;
-	}
-
-	newProcessPartials(partials: Set<string>, templateData: TemplateData, set: Set<string>): void {
-		// Partials have been found
-		if (partials.size) {
-			for (const partialPath of partials) {
-				this.newProcessPartial(partialPath, templateData, set)
-			}
-		}
-	}
-
-	// Process a partial then recursively process further nested partials
-	newProcessPartial(partialPath: string, templateData: TemplateData, set: Set<string>): string {
-
-		// Check if partial name is already registered in handlebarsPluginOptions
-		if (this.handlebarsPluginOptions.partials &&
-			typeof this.handlebarsPluginOptions.partials === 'object' &&
-			this.handlebarsPluginOptions.partials[partialPath]) {
-			return
-		}
-
-		const rootFileDirectory = path.dirname(templateData.rootFile)
-		const extname = path.extname(templateData.name)
-		const fileDirectory = path.dirname(templateData.name)
-
-		const partialFilepath = path.normalize(`${partialPath}${extname}`)
-		const partialSource = PartialsProcessor.getPartialSource(partialFilepath, templateData.name, rootFileDirectory)
-		// Skip if partial does not exist
-		if (!partialSource) return
-		
-		// Process partials with paths nested to the current filepath
-		const nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/')
-		const nestedPartialName = nestedPartialFilePath.replace(new RegExp(`${extname}$`), '')
-		
-		// Rewrite the original source to be passed to final source map
-		templateData.source = PartialsProcessor.renamePartial(templateData.source, partialPath, nestedPartialName)
-
-		// Get the nested partials
-		const partialData: TemplateData = {
-			name: nestedPartialFilePath,
-			source: partialSource,
-			rootFile: templateData.rootFile
-		}
-		this.newGetMap(partialData, set);
-	}
 }

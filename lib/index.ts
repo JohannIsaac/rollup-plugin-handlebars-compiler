@@ -13,7 +13,7 @@ export default function handlebarsCompilerPlugin(handlebarsPluginOptions?: Handl
 
 		transform(source, id) {
 			if (/\.(hbs|handlebars)/.test(id)) {
-				const output = compiler.toEsm(source, id);
+				const output = compiler.tramsformHbs(source, id);
 				const existingWatchFiles = this.getWatchFiles()
 				const watchFiles = compiler.getWatchFiles(existingWatchFiles);
 				watchFiles.forEach((file: string) => {

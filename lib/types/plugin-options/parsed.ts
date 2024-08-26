@@ -10,4 +10,5 @@ export interface IParsedOptions {
     partials: SourceData[]
     helpers: Helpers
     templateData: TemplateData
+    compileOptions: CompileOptions
 }

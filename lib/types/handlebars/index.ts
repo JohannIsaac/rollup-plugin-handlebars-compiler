@@ -3,3 +3,5 @@ export interface TemplateSpecification {
     map?: string;
     [key: string | number]: any;
 }
+
+export interface CompileResult extends TemplateSpecification {}
