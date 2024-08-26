@@ -14,17 +14,17 @@ interface CompilerResult {
 export default class HandlebarsCompiler {
     handlebarsPluginOptions: HandlebarsPluginOptions
     cache: Map<string, string>
-	watchFiles: string[]
+	files: string[]
 
     constructor(handlebarsPluginOptions: HandlebarsPluginOptions) {
         this.handlebarsPluginOptions = handlebarsPluginOptions
         this.cache = new Map();
-        this.watchFiles = [];
+        this.files = [];
     }
 
 	getWatchFiles(existingWatchFiles: string[]): string[] {
 		const files: Set<string> = new Set()
-		this.watchFiles.forEach(file => {
+		this.files.forEach(file => {
 			if (!existingWatchFiles.includes(file)) {
 				files.add(file)
 			}
@@ -51,11 +51,11 @@ export default class HandlebarsCompiler {
 			rootFile: id
 		});
 
-		this.watchFiles = partialsSourceMap.getFiles(dir, extname)
+		this.files = partialsSourceMap.getFiles(dir, extname)
 
 		const partialEntries = partialsSourceMap.getEntries()
 		partials.push(...partialEntries)
-        const compiledTemplate = partials.find(([partial, source]) => {
+        const compiledTemplate = partials.find(([partial]) => {
 			return partial === basename
 		})
 		

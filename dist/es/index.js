@@ -8432,6 +8432,70 @@ var PartialsProcessor = /** @class */ (function () {
         };
         this.getMap(partialData, sourceMap);
     };
+    PartialsProcessor.prototype.getAllPartials = function (templateData) {
+        var set = this.newGetMap(templateData);
+        return set;
+    };
+    // Recursive function for getting nested partials with pathname
+    PartialsProcessor.prototype.newGetMap = function (templateData, set) {
+        if (set === void 0) { set = new Set(); }
+        var extname = path.extname(templateData.name);
+        var templateName = templateData.name.replace(new RegExp("".concat(extname, "$")), '');
+        var tree = Handlebars.parse(templateData.source);
+        var scanner = new PartialsProcessor.ImportScanner();
+        scanner.accept(tree);
+        this.newProcessPartials(scanner.partials, templateData, set);
+        set.add(templateName);
+        return set;
+    };
+    PartialsProcessor.prototype.newProcessPartials = function (partials, templateData, set) {
+        var e_2, _a;
+        // Partials have been found
+        if (partials.size) {
+            try {
+                for (var partials_2 = __values(partials), partials_2_1 = partials_2.next(); !partials_2_1.done; partials_2_1 = partials_2.next()) {
+                    var partialPath = partials_2_1.value;
+                    this.newProcessPartial(partialPath, templateData, set);
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (partials_2_1 && !partials_2_1.done && (_a = partials_2.return)) _a.call(partials_2);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        }
+    };
+    // Process a partial then recursively process further nested partials
+    PartialsProcessor.prototype.newProcessPartial = function (partialPath, templateData, set) {
+        // Check if partial name is already registered in handlebarsPluginOptions
+        if (this.handlebarsPluginOptions.partials &&
+            typeof this.handlebarsPluginOptions.partials === 'object' &&
+            this.handlebarsPluginOptions.partials[partialPath]) {
+            return;
+        }
+        var rootFileDirectory = path.dirname(templateData.rootFile);
+        var extname = path.extname(templateData.name);
+        var fileDirectory = path.dirname(templateData.name);
+        var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
+        var partialSource = PartialsProcessor.getPartialSource(partialFilepath, templateData.name, rootFileDirectory);
+        // Skip if partial does not exist
+        if (!partialSource)
+            return;
+        // Process partials with paths nested to the current filepath
+        var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
+        var nestedPartialName = nestedPartialFilePath.replace(new RegExp("".concat(extname, "$")), '');
+        // Rewrite the original source to be passed to final source map
+        templateData.source = PartialsProcessor.renamePartial(templateData.source, partialPath, nestedPartialName);
+        // Get the nested partials
+        var partialData = {
+            name: nestedPartialFilePath,
+            source: partialSource,
+            rootFile: templateData.rootFile
+        };
+        this.newGetMap(partialData, set);
+    };
     PartialsProcessor.ImportScanner = /** @class */ (function (_super) {
         __extends(class_1, _super);
         function class_1() {
@@ -8522,11 +8586,11 @@ var HandlebarsCompiler = /** @class */ (function () {
     function HandlebarsCompiler(handlebarsPluginOptions) {
         this.handlebarsPluginOptions = handlebarsPluginOptions;
         this.cache = new Map();
-        this.watchFiles = [];
+        this.files = [];
     }
     HandlebarsCompiler.prototype.getWatchFiles = function (existingWatchFiles) {
         var files = new Set();
-        this.watchFiles.forEach(function (file) {
+        this.files.forEach(function (file) {
             if (!existingWatchFiles.includes(file)) {
                 files.add(file);
             }
@@ -8549,11 +8613,11 @@ var HandlebarsCompiler = /** @class */ (function () {
             source: source,
             rootFile: id
         });
-        this.watchFiles = partialsSourceMap.getFiles(dir, extname);
+        this.files = partialsSourceMap.getFiles(dir, extname);
         var partialEntries = partialsSourceMap.getEntries();
         partials.push.apply(partials, __spreadArray([], __read(partialEntries), false));
         var compiledTemplate = partials.find(function (_a) {
-            var _b = __read(_a, 2), partial = _b[0]; _b[1];
+            var _b = __read(_a, 1), partial = _b[0];
             return partial === basename;
         });
         var children = [];
@@ -8595,17 +8659,8 @@ var HandlebarsCompiler = /** @class */ (function () {
 
 function handlebarsCompilerPlugin(handlebarsPluginOptions) {
     var compiler = new HandlebarsCompiler(handlebarsPluginOptions);
-    var changes = {};
     return {
         name: 'handlebars-compiler',
-        watchChange: function (id, change) {
-            for (var storedId in changes) {
-                if (storedId !== id) {
-                    delete changes[storedId];
-                }
-            }
-            changes[id] = change;
-        },
         transform: function (source, id) {
             var _this = this;
             if (/\.(hbs|handlebars)/.test(id)) {
@@ -8614,12 +8669,6 @@ function handlebarsCompilerPlugin(handlebarsPluginOptions) {
                 var watchFiles = compiler.getWatchFiles(existingWatchFiles);
                 watchFiles.forEach(function (file) {
                     _this.addWatchFile(file);
-                    var changeData = Object.entries(changes).find(function (_a) {
-                        var _b = __read(_a, 2), id = _b[0]; _b[1];
-                        return path.normalize(file) === path.normalize(id);
-                    });
-                    if (!changeData)
-                        return;
                 });
                 return output;
             }
