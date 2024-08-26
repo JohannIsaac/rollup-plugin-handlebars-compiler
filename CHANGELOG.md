@@ -85,3 +85,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Cleaned up plugin source code into modules
+
+
+
+## [1.0.9](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/5/commits)  2020-8-25
+
+### Changed
+
+- Source code refactor
+- Changed Rollup config to bundle types declaration file
+- Support for `--watch` flag for nested partials
+- Improved organization of types
