@@ -1,7 +1,7 @@
 export type TemplateData = object;
 
 export type Helpers = {
-    [key: string]: () => {}
+    [key: string]: Function
 }
 
 export type Partials = {

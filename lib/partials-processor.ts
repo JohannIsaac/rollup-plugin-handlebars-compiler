@@ -131,9 +131,9 @@ export default class PartialsProcessor {
 		try {
 			partialSource = fs.readFileSync(partialAbsolutePath, 'utf-8');
 		} catch (e) {
-			const fileWithError = path.join(rootFileDirectory, currentFilepath)
-			console.error(`\x1b[31mPartial \x1b[1m${partialAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
-			console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
+			// const fileWithError = path.join(rootFileDirectory, currentFilepath)
+			// console.error(`\x1b[31mPartial \x1b[1m${partialAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
+			// console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
 		}
 		return partialSource
 	}
@@ -153,7 +153,7 @@ export default class PartialsProcessor {
 	private renamePartialInstances(source: string, fromName: string, resolvedPartialPath: string): string {
 		const extname = path.extname(resolvedPartialPath)
 		const resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp(`${extname}$`), '')
-		source = source.replaceAll(new RegExp(`(\\{\\{>(\\n|\\s)*)(${fromName})`, 'g'), `$1${resolvedPartialName} `)
+		source = source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)(${fromName})`, 'g'), `$1${resolvedPartialName} `)
 		return source
 	}
 }
