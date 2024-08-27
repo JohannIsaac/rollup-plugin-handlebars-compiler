@@ -1,6 +1,6 @@
 import { SourceData } from "../source-map"
 
-export type Helper = [string, () => {}]
+export type Helper = [string, Function]
 
 export type Partials = SourceData[]
 export type Helpers = Helper[]

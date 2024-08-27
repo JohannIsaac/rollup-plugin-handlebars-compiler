@@ -2,6 +2,7 @@ import * as ParsedOptions from './types/plugin-options/parsed';
 
 import path from 'path';
 import Handlebars from 'handlebars';
+import { js_beautify } from 'js-beautify';
 
 import { CompileResult, TemplateSpecification } from './types/handlebars';
 
@@ -39,7 +40,7 @@ export default class HandlebarsCompiler {
 		})
 		if (!compiledTemplateData) {
 			console.error('Error parsing template', file)
-			return
+			return null
 		}
 		const [templateName, compiledTemplate] = compiledTemplateData
 
@@ -61,7 +62,7 @@ export default class HandlebarsCompiler {
 		const { code, map } = this.getTemplateSpecs(file)
 
 		// Import this (partial) template and nested templates
-		const body = `
+		let body = `
 			import Handlebars from 'handlebars/runtime.js';
 			const template = Handlebars.template(${code});
 			${helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
@@ -74,6 +75,8 @@ export default class HandlebarsCompiler {
 				return template(templateData, options)
 			};
 		`;
+		// Format JS body before passing
+		body = js_beautify(body)
 
         return { code: body, map }
 	}

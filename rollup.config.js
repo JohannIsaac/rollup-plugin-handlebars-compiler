@@ -1,6 +1,7 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonJS from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import json from '@rollup/plugin-json';
 import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
 
@@ -13,7 +14,8 @@ const CONFIG_TEMPLATE = {
     input: 'lib/index.ts',
     plugins: [
         nodeResolve(),
-        commonJS()
+        commonJS(),
+        json()
     ]
 }
 

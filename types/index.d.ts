@@ -2,7 +2,7 @@ import { Plugin } from 'rollup';
 
 type TemplateData = object;
 type Helpers = {
-    [key: string]: () => {};
+    [key: string]: Function;
 };
 type Partials = {
     [key: string]: string;

@@ -22,7 +22,7 @@ function parse(handlebarsPluginOptions: HandlebarsPluginOptions): ParsedOptions.
 
 function getCompileOptions(handlebarsPluginOptions: PluginOptions.TemplateData): CompileOptions {
     const compileOptions = {}
-    for (let [key, value] of Object.entries(handlebarsPluginOptions)) {
+    for (const [key, value] of Object.entries(handlebarsPluginOptions)) {
         if (pluginOptionsKeys.includes(key)) continue
         compileOptions[key] = value
     }
