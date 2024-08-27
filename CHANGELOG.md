@@ -99,9 +99,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.2.0](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/7)  2020-8-27
+## [1.1.0](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/7)  2020-8-27
 
 ### Changed
 
 - Removed Handlebars from bundle
 - Require Handlebars as module dependency 
+
+
+
+## [1.1.1](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/10)  2020-8-28
+
+### Changed
+
+- Format transformed hbs JS function
+- Fixed params `Helpers` type checker
+- Handlebars unit tests for templates
+- Fixed compiler and runtime bugs to pass all unit tests
