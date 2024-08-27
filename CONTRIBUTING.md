@@ -19,4 +19,4 @@ If you'd like to discuss a change you want to make before spending the time to w
 1. Clone the repo with `git clone https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler.git`.
 2. Run `npm install` in the root `rollup-plugin-handlebars-compiler` folder.
 3. Run `npm link && npm link rollup-plugin-handlebars-compiler` to link the current project to `node_modules`.
-4. If you are writing a change to submit as a pull request, fork this repository and make changes on a separate branch
+4. If you are writing a change to submit as a pull request, make the changes in a new branch
