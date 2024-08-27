@@ -9,7 +9,7 @@
     "testplugin": "npm run testcompiler && npm run testruntime",
     "testcompiler": "jest -- index.test.ts",
     "testruntime": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest -- runtime-tests/runtime.test.js",
-    "testplugin-coverage": "npm run testcompiler && npm run testruntime && npm run testcompiler-coverage",
+    "testplugin-coverage": "npm run testcompiler && npm run testruntime && npm run testcompiler-coverage-only",
     "testcompiler-coverage-only": "jest --coverage --silent index.test.ts",
     "cleanup": "node cleanup.js",
     "finish": "node cleanup.js --finish",
