@@ -4,7 +4,7 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { js_beautify } from 'js-beautify';
 
-import { CompileResult, TemplateSpecification } from './types/handlebars';
+import { CompileResult, TemplateSourceMap, TemplateSpecification } from './types/handlebars';
 
 type CompiledData = [string, TemplateSpecification]
 
@@ -23,7 +23,7 @@ export default class HandlebarsCompiler {
 	private getCompiledPartials(): CompiledData[] {
 		const compiledPartials = [];
 		for (const [partial, source] of this.partials) {
-			const compiled = Handlebars.precompile(source, this.compileOptions);
+			const compiled = Handlebars.precompile(source, this.compileOptions) as string
 			const compiledData: CompiledData = [partial, compiled]
 			compiledPartials.push(compiledData);
 		}
@@ -32,7 +32,6 @@ export default class HandlebarsCompiler {
 
 	private getTemplateSpecs(file: string): TemplateSpecification {
 		const extname = path.extname(file)
-		const name = path.basename(file);
 		const basename = path.basename(file, extname)
 
         const compiledTemplateData = this.partials.find(([partial]) => {
@@ -45,10 +44,8 @@ export default class HandlebarsCompiler {
 		const [templateName, compiledTemplate] = compiledTemplateData
 
 		// Create a tree
-        const precompileOptions: PrecompileOptions = Object.assign({}, this.compileOptions)
-        precompileOptions.srcName = name
-		const tree = Handlebars.parse(compiledTemplate, { srcName: name });
-		const templateSpecs: TemplateSpecification = Handlebars.precompile(tree, precompileOptions);
+		const tree = Handlebars.parse(compiledTemplate);
+		const templateSpecs: TemplateSpecification = Handlebars.precompile(tree, this.compileOptions) as string
 
         return templateSpecs
 	}
@@ -59,7 +56,7 @@ export default class HandlebarsCompiler {
 		const helpers = this.helpers
 		const templateData = this.templateData
 
-		const { code, map } = this.getTemplateSpecs(file)
+		const code = this.getTemplateSpecs(file) as TemplateSourceMap
 
 		// Import this (partial) template and nested templates
 		let body = `
@@ -78,6 +75,6 @@ export default class HandlebarsCompiler {
 		// Format JS body before passing
 		body = js_beautify(body)
 
-        return { code: body, map }
+        return { code: body }
 	}
 }

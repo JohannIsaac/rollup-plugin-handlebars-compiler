@@ -1,5 +1,5 @@
 # rollup-plugin-handlebars-compiler
-A Rollup plugin for to compile Handlebars templates to JavaScript functions with support for partials, helpers, and precompile options.
+A Rollup plugin to pre-compile Handlebars templates to JavaScript functions with support for partials, helpers, and compile options.
 
 See [Rollup](https://rollupjs.org/) and [Handlebars](http://handlebarsjs.com).
 
@@ -69,9 +69,9 @@ Output:
 
 ## Plugin Options
 
-In addition to the Handlebars Compiler plugin options, any `Handlebars.precompile()` option can also be passed.
+In addition to the Handlebars Compiler plugin options, any compile option can also be passed.
 
-See [Handlebars Precompile Options](https://handlebarsjs.com/api-reference/compilation.html)
+See [Handlebars Compile Options](https://handlebarsjs.com/api-reference/compilation.html)
 
 ```javascript
 export default {
@@ -99,12 +99,6 @@ export default {
             preventIndent, // By default, an indented partial-call causes the output of the whole partial being indented by the same amount. This can lead to unexpected behavior when the partial writes pre-tags. Setting this option to true will disable the auto-indent feature.
             ignoreStandalone, // Disables standalone tag removal when set to true. When set, blocks and partials that are on their own line will not remove the whitespace on that line.
             explicitPartialContext, // Disables implicit context for partials. When enabled, partials that are not passed a context value will execute against an empty object.
-
-
-            /* Handlebars pre-compile options */
-
-            srcName, // Passed to generate the source map for the input file. When run in this manner, the return structure is {code, map} with code containing the template definition and map containing the source map.
-            destName, // Optional parameter used in conjunction with srcName to provide a destination file name when generating source maps
         })
     ]
 }
@@ -219,11 +213,16 @@ export default {
         ...
         handlebarsCompiler({
             partials: {
-                titlePartial: `<h1>{{Title}}</h1>`
+                titlePartial: fs.readFileSync(path.join(__dirname, './src/title-partial.hbs')).toString()
             },
         })
     ]
 }
+```
+
+```hbs
+{{! src/title-partial.hbs }}
+<h1>{{Title}}</h1>
 ```
 
 Output:

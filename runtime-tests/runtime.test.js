@@ -121,6 +121,17 @@ describe('handlebars rutime', () => {
         )
     })
     
+    it('should allow partials to be passed through the plugin options', async () => {
+        await testTemplate(
+            './with-plugin-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const catchOutput = output.indexOf("<p>another: Description</p>") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+    
     it('should allow partials to find multiple paths', async () => {
         await testTemplate(
             './with-dir-partials.hbs',

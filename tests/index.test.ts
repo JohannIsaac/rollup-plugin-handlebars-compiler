@@ -63,6 +63,7 @@ function testTemplate(template: string, pluginOptions: HandlebarsPluginOptions, 
 }
 
 describe('Handlebars Transformer', () => {
+
     it('should load simple handlebars templates', () => {
 
         const pluginOptions: HandlebarsPluginOptions = {}
@@ -72,7 +73,6 @@ describe('Handlebars Transformer', () => {
             pluginOptions,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
-                expect(output).toHaveProperty('map')
             }
         )
     })
@@ -147,6 +147,24 @@ describe('Handlebars Transformer', () => {
             pluginOptions,
             async (err, output) => {
                 const catchOutput = output.code.indexOf("Handlebars.registerHelper('description") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow partials to be passed through the plugin options', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            partials: {
+                otherPartial: fs.readFileSync(path.join(__dirname, './partialDirs/anotherDir/otherPartial.hbs')).toString()
+            }
+        }
+
+        testTemplate(
+            './with-plugin-partial.hbs',
+            pluginOptions,
+            async (err, output) => {
+                const catchOutput = output?.code.indexOf("Handlebars.registerPartial('otherPartial") >= 0
                 expect(catchOutput).toBe(true)
             }
         )

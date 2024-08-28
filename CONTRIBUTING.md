@@ -20,3 +20,9 @@ If you'd like to discuss a change you want to make before spending the time to w
 2. Run `npm install` in the root `rollup-plugin-handlebars-compiler` folder.
 3. Run `npm link && npm link rollup-plugin-handlebars-compiler` to link the current project to `node_modules`.
 4. If you are writing a change to submit as a pull request, make the changes in a new branch
+
+
+
+### Testing
+
+- Run `npm run test` to run unit tests and output test HTML results. HTML output results can be found in [./src/runtime-tests] in the `results` directory.
