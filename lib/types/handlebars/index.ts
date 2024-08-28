@@ -1,7 +1,10 @@
-export interface TemplateSpecification {
-    code?: string;
-    map?: string;
-    [key: string | number]: any;
+export type TemplateSourceMap = {
+    code: string;
+    map: string;
 }
 
-export interface CompileResult extends TemplateSpecification {}
+export type TemplateSpecification = string | TemplateSourceMap
+
+export type CompileResult = {
+    code: string
+}

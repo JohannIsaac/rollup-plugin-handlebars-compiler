@@ -1,2 +1,5 @@
-export type SourceData = [string, string]
-export type SourceDataMap = Map<string, string>
+type SourceFile = string
+type SourceContent = string
+
+export type SourceData = [SourceFile, SourceContent]
+export type SourceDataMap = Map<SourceFile, SourceContent>

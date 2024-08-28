@@ -230,6 +230,10 @@ var pluginOptionsKeys = [
     'partials',
     'templateData',
 ];
+var preCompileOptions = [
+    'srcName',
+    'destName'
+];
 function parse(handlebarsPluginOptions) {
     var parsedOptions = {
         compileOptions: getCompileOptions(handlebarsPluginOptions),
@@ -245,7 +249,7 @@ function getCompileOptions(handlebarsPluginOptions) {
     try {
         for (var _b = __values(Object.entries(handlebarsPluginOptions)), _c = _b.next(); !_c.done; _c = _b.next()) {
             var _d = __read(_c.value, 2), key = _d[0], value = _d[1];
-            if (pluginOptionsKeys.includes(key))
+            if (pluginOptionsKeys.includes(key) || preCompileOptions.includes(key))
                 continue;
             compileOptions[key] = value;
         }
@@ -5936,7 +5940,6 @@ var HandlebarsCompiler = /** @class */ (function () {
     };
     HandlebarsCompiler.prototype.getTemplateSpecs = function (file) {
         var extname = path.extname(file);
-        var name = path.basename(file);
         var basename = path.basename(file, extname);
         var compiledTemplateData = this.partials.find(function (_a) {
             var _b = __read(_a, 1), partial = _b[0];
@@ -5948,10 +5951,8 @@ var HandlebarsCompiler = /** @class */ (function () {
         }
         var _a = __read(compiledTemplateData, 2); _a[0]; var compiledTemplate = _a[1];
         // Create a tree
-        var precompileOptions = Object.assign({}, this.compileOptions);
-        precompileOptions.srcName = name;
-        var tree = Handlebars.parse(compiledTemplate, { srcName: name });
-        var templateSpecs = Handlebars.precompile(tree, precompileOptions);
+        var tree = Handlebars.parse(compiledTemplate);
+        var templateSpecs = Handlebars.precompile(tree, this.compileOptions);
         return templateSpecs;
     };
     // Compile handlebars file to ESM
@@ -5959,7 +5960,7 @@ var HandlebarsCompiler = /** @class */ (function () {
         var compiledPartials = this.getCompiledPartials();
         var helpers = this.helpers;
         var templateData = this.templateData;
-        var _a = this.getTemplateSpecs(file), code = _a.code, map = _a.map;
+        var code = this.getTemplateSpecs(file);
         // Import this (partial) template and nested templates
         var body = "\n\t\t\timport Handlebars from 'handlebars/runtime.js';\n\t\t\tconst template = Handlebars.template(".concat(code, ");\n\t\t\t").concat(helpers.map(function (_a) {
             var _b = __read(_a, 2), helper = _b[0], fn = _b[1];
@@ -5970,7 +5971,7 @@ var HandlebarsCompiler = /** @class */ (function () {
         }).join('\n'), "\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
         // Format JS body before passing
         body = jsExports.js_beautify(body);
-        return { code: body, map: map };
+        return { code: body };
     };
     return HandlebarsCompiler;
 }());
