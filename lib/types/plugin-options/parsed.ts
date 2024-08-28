@@ -7,7 +7,7 @@ export type Helpers = Helper[]
 export type TemplateData = object
 
 export interface IParsedOptions {
-    partials: SourceData[]
+    partials: Partials
     helpers: Helpers
     templateData: TemplateData
     compileOptions: CompileOptions

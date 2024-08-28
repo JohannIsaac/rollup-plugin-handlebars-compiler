@@ -116,3 +116,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed params `Helpers` type checker
 - Handlebars unit tests for templates
 - Fixed compiler and runtime bugs to pass all unit tests
+
+
+
+## [1.1.2](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/12)  2020-8-29
+
+### Changed
+
+- Removed precompile options as passable plugin options as these are currently unnecessary and may be unwanted (this can later be added as a feature)
+- Added README and test example of passing hbs files to the `partials` plugin options

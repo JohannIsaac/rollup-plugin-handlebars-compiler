@@ -10,6 +10,11 @@ const pluginOptionsKeys = [
     'templateData',
 ]
 
+const preCompileOptions = [
+    'srcName',
+    'destName'
+]
+
 function parse(handlebarsPluginOptions: HandlebarsPluginOptions): ParsedOptions.IParsedOptions {
     const parsedOptions: ParsedOptions.IParsedOptions = {
         compileOptions: getCompileOptions(handlebarsPluginOptions),
@@ -20,10 +25,10 @@ function parse(handlebarsPluginOptions: HandlebarsPluginOptions): ParsedOptions.
     return parsedOptions
 }
 
-function getCompileOptions(handlebarsPluginOptions: PluginOptions.TemplateData): CompileOptions {
+function getCompileOptions(handlebarsPluginOptions: HandlebarsPluginOptions): CompileOptions {
     const compileOptions = {}
     for (const [key, value] of Object.entries(handlebarsPluginOptions)) {
-        if (pluginOptionsKeys.includes(key)) continue
+        if (pluginOptionsKeys.includes(key) || preCompileOptions.includes(key)) continue
         compileOptions[key] = value
     }
     return compileOptions
