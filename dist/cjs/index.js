@@ -79,67 +79,64 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
 
-var SourceMap = /** @class */ (function () {
-    function SourceMap(map) {
-        var _this = this;
-        var sources = Array.from(map);
-        sources.forEach(function (_a) {
-            var _b = __read(_a, 2), filename = _b[0], source = _b[1];
-            _this[filename] = source;
-        });
-    }
-    SourceMap.prototype.getFiles = function (directory, extname) {
-        var filepaths = Array.from(Object.keys(this));
-        var absoluteFilepaths = filepaths.map(function (filepath) {
-            var dir = path.dirname(filepath);
-            var basename = path.basename(filepath);
-            var name = "".concat(basename).concat(extname);
-            var absoluteFilepath = path.join(dir, name);
-            return path.join(directory, absoluteFilepath);
-        });
-        var uniqueFiles = __spreadArray([], __read(new Set(absoluteFilepaths)), false);
-        return uniqueFiles;
-    };
-    SourceMap.prototype.getEntries = function () {
-        var entries = Object.entries(this);
-        return entries;
-    };
-    return SourceMap;
-}());
-
-var PartialsProcessor = /** @class */ (function () {
-    function PartialsProcessor(handlebarsPluginOptions) {
+var StatementsProcessor = /** @class */ (function () {
+    function StatementsProcessor(templateData, handlebarsPluginOptions) {
+        if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
         this.handlebarsPluginOptions = handlebarsPluginOptions;
+        var processResult = this.processStatements(templateData);
+        this.partials = processResult.partials;
+        this.helpers = processResult.helpers;
     }
-    PartialsProcessor.prototype.getSourceMap = function (templateData) {
-        var map = this.getMap(templateData);
-        var sourceMap = new SourceMap(map);
-        return sourceMap;
-    };
     // Recursive function for getting nested partials with pathname
-    PartialsProcessor.prototype.getMap = function (templateData, sourceMap) {
+    StatementsProcessor.prototype.processStatements = function (templateData, partialsMap, helpersMap) {
         var _this = this;
-        if (sourceMap === void 0) { sourceMap = new Map(); }
+        if (partialsMap === void 0) { partialsMap = new Map(); }
+        if (helpersMap === void 0) { helpersMap = new Map; }
         // If partials are detected, process each partial
-        var partials = this.getAllPartials(templateData.source);
+        var _a = this.getAllStatements(templateData.source), partials = _a.partials, helpers = _a.helpers;
+        if (helpers)
+            helpers.forEach(function (helperPath) { return _this.processHelper(helperPath, templateData, helpersMap); });
         if (partials)
-            partials.forEach(function (partialPath) { return _this.processPartial(partialPath, templateData, sourceMap); });
+            partials.forEach(function (partialPath) { return _this.processPartial(partialPath, templateData, partialsMap, helpersMap); });
         // Add current template to source-map with re-written templateData.source
         // processPartial resolves partial instance paths for the templateData.source
         var extname = path.extname(templateData.name);
         var templateName = templateData.name.replace(new RegExp("".concat(extname, "$")), '');
-        sourceMap.set(templateName, templateData.source);
-        return sourceMap;
+        partialsMap.set(templateName, templateData.source);
+        var processResult = {
+            partials: partialsMap,
+            helpers: helpersMap
+        };
+        return processResult;
     };
-    PartialsProcessor.prototype.getAllPartials = function (source) {
+    StatementsProcessor.prototype.getAllStatements = function (source) {
         var tree = Handlebars.parse(source);
-        var scanner = new PartialsProcessor.ImportScanner();
+        var scanner = new StatementsProcessor.ImportScanner();
         scanner.accept(tree);
         var partials = !!scanner.partials.size && scanner.partials;
-        return partials;
+        var helpers = !!scanner.helpers.size && scanner.helpers;
+        return { partials: partials, helpers: helpers };
     };
     // Process a partial then recursively process further nested partials
-    PartialsProcessor.prototype.processPartial = function (partialPath, templateData, sourceMap) {
+    StatementsProcessor.prototype.processHelper = function (helperPath, templateData, helpersMap) {
+        // Skip if helper does not exist
+        var helperResolved = this.resolveHelper(helperPath, templateData);
+        if (!helperResolved)
+            return;
+        // Resolve the helper path relative to the root file
+        var resolvedHelperPath = this.resolveHelperFilepath(helperPath, templateData);
+        // Rewrite the original source to be passed to final source map
+        var extname = path.extname(resolvedHelperPath);
+        var escapedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp("".concat(extname, "$")), '');
+        escapedHelperName = this.escapePathName(escapedHelperName);
+        templateData.source = this.renameHelperInstances(templateData.source, helperPath, escapedHelperName);
+        var rootFileDirectory = path.dirname(templateData.rootFile);
+        var absoluteHelperDirectory = path.join(rootFileDirectory, resolvedHelperPath);
+        var importDirectory = absoluteHelperDirectory.replaceAll('\\', '/');
+        helpersMap.set(escapedHelperName, importDirectory);
+    };
+    // Process a partial then recursively process further nested partials
+    StatementsProcessor.prototype.processPartial = function (partialPath, templateData, partialsMap, helpersMap) {
         // Skip if partial does not exist
         var partialSource = this.resolvePartialSource(partialPath, templateData);
         if (!partialSource)
@@ -154,10 +151,10 @@ var PartialsProcessor = /** @class */ (function () {
             source: partialSource,
             rootFile: templateData.rootFile
         };
-        this.getMap(partialTemplateData, sourceMap);
+        this.processStatements(partialTemplateData, partialsMap, helpersMap);
     };
     // Process a partial then recursively process further nested partials
-    PartialsProcessor.prototype.resolvePartialSource = function (partialPath, templateData) {
+    StatementsProcessor.prototype.resolvePartialSource = function (partialPath, templateData) {
         // Check if partial name is already registered in handlebarsPluginOptions
         if (this.handlebarsPluginOptions.partials &&
             typeof this.handlebarsPluginOptions.partials === 'object' &&
@@ -167,7 +164,18 @@ var PartialsProcessor = /** @class */ (function () {
         var partialSource = this.getPartialSource(partialPath, templateData);
         return partialSource;
     };
-    PartialsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
+    // Process a partial then recursively process further nested partials
+    StatementsProcessor.prototype.resolveHelper = function (helperPath, templateData) {
+        // Check if partial name is already registered in handlebarsPluginOptions
+        if (this.handlebarsPluginOptions.helpers &&
+            typeof this.handlebarsPluginOptions.helpers === 'object' &&
+            this.handlebarsPluginOptions.helpers[helperPath]) {
+            return false;
+        }
+        var partialSource = this.checkIfHelperExists(helperPath, templateData);
+        return partialSource;
+    };
+    StatementsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
         var rootFileDirectory = path.dirname(templateData.rootFile);
         var currentFilepath = templateData.name;
         var extname = path.extname(currentFilepath);
@@ -186,7 +194,26 @@ var PartialsProcessor = /** @class */ (function () {
         }
         return partialSource;
     };
-    PartialsProcessor.prototype.resolvePartialFilepath = function (partialPath, templateData) {
+    StatementsProcessor.prototype.checkIfHelperExists = function (helperPath, templateData) {
+        var rootFileDirectory = path.dirname(templateData.rootFile);
+        var currentFilepath = templateData.name;
+        var extname = '.js';
+        var helperFilepath = path.normalize("".concat(helperPath).concat(extname));
+        var relativeFileDirectory = path.dirname(currentFilepath);
+        var relativePartialPath = path.join(relativeFileDirectory, helperFilepath);
+        var absoluteFilepath = path.resolve(rootFileDirectory, relativePartialPath);
+        var helperExists = false;
+        try {
+            helperExists = fs.existsSync(absoluteFilepath);
+        }
+        catch (e) {
+            // const fileWithError = path.join(rootFileDirectory, currentFilepath)
+            // console.error(`\x1b[31mPartial \x1b[1m${partialAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
+            // console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
+        }
+        return helperExists;
+    };
+    StatementsProcessor.prototype.resolvePartialFilepath = function (partialPath, templateData) {
         var extname = path.extname(templateData.name);
         var fileDirectory = path.dirname(templateData.name);
         var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
@@ -194,14 +221,34 @@ var PartialsProcessor = /** @class */ (function () {
         var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
         return nestedPartialFilePath;
     };
+    StatementsProcessor.prototype.resolveHelperFilepath = function (partialPath, templateData) {
+        var extname = '.js';
+        var fileDirectory = path.dirname(templateData.name);
+        var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
+        // Process partials with paths nested to the current filepath
+        var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
+        return nestedPartialFilePath;
+    };
     // Rewrite the original source to be passed to final source map
-    PartialsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
+    StatementsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
         var extname = path.extname(resolvedPartialPath);
         var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
-        source = source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)(".concat(fromName, ")"), 'g'), "$1".concat(resolvedPartialName, " "));
+        source = source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)(".concat(fromName, ")(?=[\\r\\n\\s\\}])"), 'g'), "$1".concat(resolvedPartialName));
         return source;
     };
-    PartialsProcessor.ImportScanner = /** @class */ (function (_super) {
+    // Rewrite the original source to be passed to final source map
+    StatementsProcessor.prototype.renameHelperInstances = function (source, fromName, resolvedPartialPath) {
+        var extname = path.extname(resolvedPartialPath);
+        var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
+        resolvedPartialName = this.escapePathName(resolvedPartialName);
+        source = source.replaceAll(new RegExp("(\\{\\{(?:\\n|\\s)*)(\\[?)".concat(fromName, "(\\]?)(?=[\\r\\n\\s\\}])"), 'g'), "$1$2".concat(resolvedPartialName, "$3"));
+        return source;
+    };
+    StatementsProcessor.prototype.escapePathName = function (pathname) {
+        var escapedName = pathname.replace(/^\.\//, '').replace(/^\//, '__').replaceAll(/\.\.\//g, '_').replaceAll(/\\|\//g, '--');
+        return escapedName;
+    };
+    StatementsProcessor.ImportScanner = /** @class */ (function (_super) {
         __extends(class_1, _super);
         function class_1() {
             var _this = _super.call(this) || this;
@@ -219,9 +266,19 @@ var PartialsProcessor = /** @class */ (function () {
                 throw new Error('Dynamic partial resolution is not supported');
             }
         };
+        class_1.prototype.MustacheStatement = function (mustache) {
+            if (mustache.path.type === 'PathExpression') {
+                var path_1 = mustache.path;
+                this.helpers.add(path_1.original);
+                return _super.prototype.MustacheStatement.call(this, mustache);
+            }
+            else {
+                throw new Error('Dynamic helper resolution is not supported');
+            }
+        };
         return class_1;
     }(Handlebars.Visitor));
-    return PartialsProcessor;
+    return StatementsProcessor;
 }());
 
 var pluginOptions = { parse: parse };
@@ -239,7 +296,9 @@ function parse(handlebarsPluginOptions) {
         compileOptions: getCompileOptions(handlebarsPluginOptions),
         partials: getPartials(handlebarsPluginOptions.partials),
         helpers: getHelpers(handlebarsPluginOptions.helpers),
-        templateData: getTemplateData(handlebarsPluginOptions.templateData)
+        templateData: getTemplateData(handlebarsPluginOptions.templateData),
+        imports: [],
+        helperModules: []
     };
     return parsedOptions;
 }
@@ -5918,12 +5977,18 @@ var HandlebarsCompiler = /** @class */ (function () {
             _this[key] = value;
         });
     }
-    HandlebarsCompiler.prototype.getCompiledPartials = function () {
+    HandlebarsCompiler.prototype.getCompiledPartials = function (file) {
         var e_1, _a;
+        var extname = path.extname(file);
+        var basename = path.basename(file, extname);
+        var partials = this.partials.filter(function (_a) {
+            var _b = __read(_a, 1), partial = _b[0];
+            return partial !== basename;
+        });
         var compiledPartials = [];
         try {
-            for (var _b = __values(this.partials), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), partial = _d[0], source = _d[1];
+            for (var partials_1 = __values(partials), partials_1_1 = partials_1.next(); !partials_1_1.done; partials_1_1 = partials_1.next()) {
+                var _b = __read(partials_1_1.value, 2), partial = _b[0], source = _b[1];
                 var compiled = Handlebars.precompile(source, this.compileOptions);
                 var compiledData = [partial, compiled];
                 compiledPartials.push(compiledData);
@@ -5932,7 +5997,7 @@ var HandlebarsCompiler = /** @class */ (function () {
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                if (partials_1_1 && !partials_1_1.done && (_a = partials_1.return)) _a.call(partials_1);
             }
             finally { if (e_1) throw e_1.error; }
         }
@@ -5957,18 +6022,22 @@ var HandlebarsCompiler = /** @class */ (function () {
     };
     // Compile handlebars file to ESM
     HandlebarsCompiler.prototype.compile = function (file) {
-        var compiledPartials = this.getCompiledPartials();
-        var helpers = this.helpers;
-        var templateData = this.templateData;
+        var compiledPartials = this.getCompiledPartials(file);
         var code = this.getTemplateSpecs(file);
         // Import this (partial) template and nested templates
-        var body = "\n\t\t\timport Handlebars from 'handlebars/runtime.js';\n\t\t\tconst template = Handlebars.template(".concat(code, ");\n\t\t\t").concat(helpers.map(function (_a) {
+        var body = "\n\t\t\timport Handlebars from 'handlebars/runtime.js';\n\t\t\t".concat(this.imports.map(function (_a) {
+            var _b = __read(_a, 2), moduleName = _b[0], importPath = _b[1];
+            return "import ".concat(moduleName, " from '").concat(importPath, "'");
+        }).join('\n'), "\n\t\t\t").concat(this.helpers.map(function (_a) {
             var _b = __read(_a, 2), helper = _b[0], fn = _b[1];
             return "Handlebars.registerHelper('".concat(helper, "', ").concat(fn, ");");
+        }).join('\n'), "\n\t\t\t").concat(this.helperModules.map(function (_a) {
+            var _b = __read(_a, 2), helper = _b[0], moduleName = _b[1];
+            return "Handlebars.registerHelper('".concat(helper, "', ").concat(moduleName, ");");
         }).join('\n'), "\n\t\t\t").concat(compiledPartials.map(function (_a) {
             var _b = __read(_a, 2), partial = _b[0], compiled = _b[1];
             return "Handlebars.registerPartial('".concat(partial, "', Handlebars.template(").concat(compiled, "));");
-        }).join('\n'), "\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
+        }).join('\n'), "\n\t\t\tconst template = Handlebars.template(").concat(code, ");\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(this.templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
         // Format JS body before passing
         body = jsExports.js_beautify(body);
         return { code: body };
@@ -5976,8 +6045,77 @@ var HandlebarsCompiler = /** @class */ (function () {
     return HandlebarsCompiler;
 }());
 
+var SourceMap = /** @class */ (function () {
+    function SourceMap(map) {
+        var _this = this;
+        var sources = Array.from(map);
+        sources.forEach(function (_a) {
+            var _b = __read(_a, 2), filename = _b[0], source = _b[1];
+            _this[filename] = source;
+        });
+    }
+    SourceMap.prototype.getFiles = function (directory, extname) {
+        var filepaths = Array.from(Object.keys(this));
+        var absoluteFilepaths = filepaths.map(function (filepath) {
+            var dir = path.dirname(filepath);
+            var basename = path.basename(filepath);
+            var name = "".concat(basename).concat(extname);
+            var absoluteFilepath = path.join(dir, name);
+            return path.join(directory, absoluteFilepath);
+        });
+        var uniqueFiles = __spreadArray([], __read(new Set(absoluteFilepaths)), false);
+        return uniqueFiles;
+    };
+    SourceMap.prototype.getEntries = function () {
+        var entries = Object.entries(this);
+        return entries;
+    };
+    return SourceMap;
+}());
+
+var ImportsMap = /** @class */ (function () {
+    function ImportsMap(paths) {
+        var _this = this;
+        var filepaths = Array.from(paths);
+        filepaths.forEach(function (_a) {
+            var _b = __read(_a, 2), escapedName = _b[0], absoluteFilepath = _b[1];
+            var name = _this.camelizeFilepath(escapedName);
+            var path = absoluteFilepath;
+            var module = { name: name, path: path };
+            _this[escapedName] = module;
+        });
+    }
+    ImportsMap.prototype.camelizeFilepath = function (filepath) {
+        var extname = path.extname(filepath);
+        return filepath
+            .replace(new RegExp("".concat(extname, "$")), '')
+            .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+            return index === 0 ? word.toLowerCase() : word.toUpperCase();
+        })
+            .replace(/\W+/g, '');
+    };
+    ImportsMap.prototype.getImports = function () {
+        var importsData = Object.entries(this);
+        var imports = importsData.map(function (_a) {
+            var _b = __read(_a, 2); _b[0]; var module = _b[1];
+            return [module.name, module.path];
+        });
+        return imports;
+    };
+    ImportsMap.prototype.getHelperModules = function () {
+        var importsData = Object.entries(this);
+        var imports = importsData.map(function (_a) {
+            var _b = __read(_a, 2), filepath = _b[0], module = _b[1];
+            return [filepath, module.name];
+        });
+        return imports;
+    };
+    return ImportsMap;
+}());
+
 var HandlebarsTransformer = /** @class */ (function () {
     function HandlebarsTransformer(handlebarsPluginOptions) {
+        if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
         this.handlebarsPluginOptions = handlebarsPluginOptions;
         this.cache = new Map();
         this.files = [];
@@ -5993,24 +6131,29 @@ var HandlebarsTransformer = /** @class */ (function () {
     };
     // Convert to ESM and register partial
     HandlebarsTransformer.prototype.transform = function (source, file) {
-        var _a;
-        var partialsSourceMap = this.getPartialsSourceMap(source, file);
+        var _a, _b, _c;
+        var statementsProcessor = this.getStatementsProcessor(source, file);
+        var partialsSourceMap = new SourceMap(statementsProcessor.partials);
         var partialEntries = this.processPartialsSourceMap(source, partialsSourceMap);
+        var importsMap = new ImportsMap(statementsProcessor.helpers);
+        var imports = importsMap.getImports();
+        var helperModules = importsMap.getHelperModules();
         var parsedOptions = pluginOptions.parse(this.handlebarsPluginOptions);
         (_a = parsedOptions.partials).push.apply(_a, __spreadArray([], __read(partialEntries), false));
+        (_b = parsedOptions.imports).push.apply(_b, __spreadArray([], __read(imports), false));
+        (_c = parsedOptions.helperModules).push.apply(_c, __spreadArray([], __read(helperModules), false));
         var compiler = new HandlebarsCompiler(parsedOptions);
         var data = compiler.compile(file);
         return data;
     };
-    HandlebarsTransformer.prototype.getPartialsSourceMap = function (source, file) {
+    HandlebarsTransformer.prototype.getStatementsProcessor = function (source, file) {
         var name = path.basename(file);
-        var partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions);
-        var partialsSourceMap = partialsProcessor.getSourceMap({
+        var statementsProcessor = new StatementsProcessor({
             name: name,
             source: source,
             rootFile: file
-        });
-        return partialsSourceMap;
+        }, this.handlebarsPluginOptions);
+        return statementsProcessor;
     };
     HandlebarsTransformer.prototype.processPartialsSourceMap = function (file, sourceMap) {
         var dir = path.dirname(file);
