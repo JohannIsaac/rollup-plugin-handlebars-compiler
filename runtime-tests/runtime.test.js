@@ -75,8 +75,8 @@ describe('handlebars rutime', () => {
             './simple.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput1 = output.indexOf("Title") >= 0
-                const catchOutput2 = output.indexOf("A simple template") >= 0
+                const catchOutput1 = output.includes("Title")
+                const catchOutput2 = output.includes("A simple template")
                 expect(catchOutput1 && catchOutput2).toBe(true)
             }
         )
@@ -107,7 +107,7 @@ describe('handlebars rutime', () => {
             './with-known-helpers.hbs',
             {},
             async (err, output) => {
-                const catchOutput = output.indexOf("some known helper") >= 0
+                const catchOutput = output.includes("some known helper")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -118,7 +118,7 @@ describe('handlebars rutime', () => {
             './with-helpers-commonjs.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("Description Description") >= 0
+                const catchOutput = output.includes("Description Description")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -129,7 +129,7 @@ describe('handlebars rutime', () => {
             './with-plugin-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("<p>another: Description</p>") >= 0
+                const catchOutput = output.includes("<p>another: Description</p>")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -140,10 +140,10 @@ describe('handlebars rutime', () => {
             './with-dir-partials.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput1 = output.indexOf("<h1>Title</h1>") >= 0
-                const catchOutput2 = output.indexOf("<p>Description</p>") >= 0
-                const catchOutput3 = output.indexOf("<p>Other: Description</p>") >= 0
-                const catchOutput4 = output.indexOf("<p>another: Description</p>") >= 0
+                const catchOutput1 = output.includes("<h1>Title</h1>")
+                const catchOutput2 = output.includes("<p>Description</p>")
+                const catchOutput3 = output.includes("<p>Other: Description</p>")
+                const catchOutput4 = output.includes("<p>another: Description</p>")
                 expect(catchOutput1 && catchOutput2 && catchOutput3 && catchOutput4).toBe(true)
             }
         )
@@ -154,7 +154,7 @@ describe('handlebars rutime', () => {
             './nested-templates/nested/with-ancestor-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("<p>Description</p>") >= 0
+                const catchOutput = output.includes("<p>Description</p>")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -165,7 +165,7 @@ describe('handlebars rutime', () => {
             './nested-templates/with-parent-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("<p>Description</p>") >= 0
+                const catchOutput = output.includes("<p>Description</p>")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -176,7 +176,7 @@ describe('handlebars rutime', () => {
             './nested-templates/with-cousin-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("<p>another: Description</p>") >= 0
+                const catchOutput = output.includes("<p>another: Description</p>")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -187,7 +187,7 @@ describe('handlebars rutime', () => {
             './with-partial-block.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("<div>Failover</div>") >= 0
+                const catchOutput = output.includes("<div>Failover</div>")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -198,7 +198,7 @@ describe('handlebars rutime', () => {
             './with-inline-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.indexOf("Foo") >= 0
+                const catchOutput = output.includes("Foo")
                 expect(catchOutput).toBe(true)
             }
         )
