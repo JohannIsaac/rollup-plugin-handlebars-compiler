@@ -5,3 +5,4 @@ tests/runtime/results
 tests/plugin/dev.test.ts
 tests/runtime/dev.test.js
 tests/plugin/dev
+tests/rollup/dist

@@ -64,7 +64,7 @@ export default class StatementsProcessor {
 
 
 	// Recursive function for getting nested partials with pathname
-	private processStatements(templateData: TemplateData, partialsMap: SourceDataMap = new Map(), helpersMap: PathMap = new Map) {
+	private processStatements(templateData: TemplateData, partialsMap: SourceDataMap = new Map(), helpersMap: PathMap = new Map()) {
 		
 		// If partials are detected, process each partial
 		const { partials, helpers } = this.getAllStatements(templateData.source)
