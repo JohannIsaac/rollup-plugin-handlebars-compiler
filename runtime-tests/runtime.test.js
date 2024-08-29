@@ -4,6 +4,9 @@
 
 import fs from 'fs'
 import path from 'path';
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const TEST_TEMPLATE_DATA = {
     title: "Title",
@@ -40,13 +43,13 @@ function getTemplateModulePath(template) {
     const extname = path.extname(template)
     const basename = path.basename(template, extname)
     const moduleName = `${basename}.js`
-    const modulePath = path.join(templateDir, 'functions', moduleName)
+    const modulePath = path.join(__dirname, 'functions', templateDir, moduleName)
     return modulePath
 }
 
 async function getTemplate(template) {
     const modulePath = getTemplateModulePath(template)
-    const module = await import(`./${modulePath}`)
+    const module = await import(`${modulePath}`)
     const esTemplate = module.default
     return esTemplate
 }
@@ -142,6 +145,39 @@ describe('handlebars rutime', () => {
                 const catchOutput3 = output.indexOf("<p>Other: Description</p>") >= 0
                 const catchOutput4 = output.indexOf("<p>another: Description</p>") >= 0
                 expect(catchOutput1 && catchOutput2 && catchOutput3 && catchOutput4).toBe(true)
+            }
+        )
+    })
+    
+    it('should allow partials from ancestor directory', async () => {
+        await testTemplate(
+            './nested-templates/nested/with-ancestor-dir-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const catchOutput = output.indexOf("<p>Description</p>") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+    
+    it('should allow partials from parent directory', async () => {
+        await testTemplate(
+            './nested-templates/with-parent-dir-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const catchOutput = output.indexOf("<p>Description</p>") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+    
+    it('should allow partials from cousin directory', async () => {
+        await testTemplate(
+            './nested-templates/with-cousin-dir-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const catchOutput = output.indexOf("<p>another: Description</p>") >= 0
+                expect(catchOutput).toBe(true)
             }
         )
     })

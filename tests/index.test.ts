@@ -188,6 +188,48 @@ describe('Handlebars Transformer', () => {
     it.todo('should allow nested partials')
     it.todo('should allow resolving parent paths in partials')
 
+    it('should allow partials from ancestor directory', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {}
+
+        testTemplate(
+            './nested-templates/nested/with-ancestor-dir-partial.hbs',
+            pluginOptions,
+            async (err, output) => {
+                const catchOutput = output?.code.indexOf("Handlebars.registerPartial('../../some-partial") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow partials from parent directory', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {}
+
+        testTemplate(
+            './nested-templates/with-parent-dir-partial.hbs',
+            pluginOptions,
+            async (err, output) => {
+                const catchOutput = output?.code.indexOf("Handlebars.registerPartial('../some-partial") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow partials from cousin directory', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {}
+
+        testTemplate(
+            './nested-templates/with-cousin-dir-partial.hbs',
+            pluginOptions,
+            async (err, output) => {
+                const catchOutput = output?.code.indexOf("Handlebars.registerPartial('../partialDirs/anotherDir/otherPartial") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
     it('should use failover content of the partial block if it refers to non-existent partial', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {}
