@@ -137,6 +137,24 @@ describe('Handlebars Transformer', () => {
         )
     })
 
+    it('should allow partials to be passed through the plugin options', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            partials: {
+                otherPartial: fs.readFileSync(path.join(__dirname, './partialDirs/anotherDir/otherPartial.hbs')).toString()
+            }
+        }
+
+        testTemplate(
+            './with-plugin-partial.hbs',
+            pluginOptions,
+            async (err, output) => {
+                const catchOutput = output?.code.indexOf("Handlebars.registerPartial('otherPartial") >= 0
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
     it('should allow partials to find multiple paths', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {}

@@ -139,3 +139,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix: Fixed critical bug where passing no plugin options throws an error
 - Fix: Removed registering the context template file as a partial
+- Added README and test example of passing hbs files to the `partials` plugin options
