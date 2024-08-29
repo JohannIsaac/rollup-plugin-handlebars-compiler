@@ -89,7 +89,7 @@ var StatementsProcessor = /** @class */ (function () {
     StatementsProcessor.prototype.processStatements = function (templateData, partialsMap, helpersMap) {
         var _this = this;
         if (partialsMap === void 0) { partialsMap = new Map(); }
-        if (helpersMap === void 0) { helpersMap = new Map; }
+        if (helpersMap === void 0) { helpersMap = new Map(); }
         // If partials are detected, process each partial
         var _a = this.getAllStatements(templateData.source), partials = _a.partials, helpers = _a.helpers;
         if (helpers)
