@@ -7,10 +7,10 @@
     "dev": "rollup --config --watch --environment BUILD:development",
     "test": "npm run testlint && npm run testplugin-coverage",
     "testplugin": "npm run testcompiler && npm run testruntime",
-    "testcompiler": "jest -- index.test.ts",
-    "testruntime": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest -- runtime-tests/runtime.test.js",
+    "testcompiler": "jest -- tests/plugin/index.test.ts",
+    "testruntime": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest -- tests/runtime/runtime.test.js",
     "testplugin-coverage": "npm run testcompiler && npm run testruntime && npm run testcompiler-coverage-only",
-    "testcompiler-coverage-only": "jest --coverage --silent index.test.ts",
+    "testcompiler-coverage-only": "jest --coverage --silent tests/plugin/index.test.ts",
     "cleanup": "node cleanup.js",
     "finish": "node cleanup.js --finish",
     "testlint": "tslint -c tslint.json 'lib/*.ts'"

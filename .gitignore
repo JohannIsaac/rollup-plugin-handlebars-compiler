@@ -1,4 +1,4 @@
 node_modules
 coverage
-runtime-tests/functions
-runtime-tests/results
+tests/runtime/functions
+tests/runtime/results

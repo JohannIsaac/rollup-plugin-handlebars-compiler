@@ -2,11 +2,7 @@
  * @jest-environment jsdom
  */
 
-import fs from 'fs'
-import path from 'path';
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { removeTestResultsDir, testTemplate } from './utils';
 
 const TEST_TEMPLATE_DATA = {
     title: "Title",
@@ -15,58 +11,7 @@ const TEST_TEMPLATE_DATA = {
     object: { a: "a", b: "b", c: "c" },
 }
 
-const testResultsDir = './runtime-tests/results'
-if (fs.existsSync(testResultsDir)) {
-    fs.rmdirSync(testResultsDir, { recursive: true });
-}
-
-function createTemplateTestResult(template, output) {
-    const resultsDirectory = path.dirname(template)
-    const extname = path.extname(template)
-    const basename = path.basename(template, extname)
-    const filename = `${basename}.html`
-    const filepath = path.join(testResultsDir, resultsDirectory, filename)
-    try {
-        const outputDir = path.dirname(filepath)
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-        }
-        fs.writeFileSync(filepath, output)
-    } catch (e) {
-        console.error('Could not create test result', filepath)
-        console.error(e)
-    }
-}
-
-function getTemplateModulePath(template) {
-    const templateDir = path.dirname(template)
-    const extname = path.extname(template)
-    const basename = path.basename(template, extname)
-    const moduleName = `${basename}.js`
-    const modulePath = path.join(__dirname, 'functions', templateDir, moduleName)
-    return modulePath
-}
-
-async function getTemplate(template) {
-    const modulePath = getTemplateModulePath(template)
-    const module = await import(`${modulePath}`)
-    const esTemplate = module.default
-    return esTemplate
-}
-
-async function testTemplate(template, data, testFn = (err, output) => {}) {
-    let err = null
-    let output = null
-    try {
-        let templateFn = await getTemplate(template)
-        output = templateFn(data)
-    } catch (e) {
-        err = e
-    }
-    createTemplateTestResult(template, output || '')
-
-    testFn(err, output)
-}
+removeTestResultsDir()
 
 describe('handlebars rutime', () => {
 

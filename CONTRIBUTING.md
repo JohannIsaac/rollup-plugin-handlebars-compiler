@@ -25,4 +25,4 @@ If you'd like to discuss a change you want to make before spending the time to w
 
 ### Testing
 
-- Run `npm run test` to run unit tests and output test HTML results. HTML output results can be found in [./src/runtime-tests] in the `results` directory.
+- Run `npm run test` to run unit tests and output test HTML results. HTML output results can be found in [./tests/runtime/output] in the `results` directory, while JS template functions can be found in [./tests/runtime/functions].
