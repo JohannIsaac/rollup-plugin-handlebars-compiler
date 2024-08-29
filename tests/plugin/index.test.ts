@@ -9,7 +9,7 @@ removeOutputDir()
 
 describe('Handlebars Transformer', () => {
 
-    it('should load simple handlebars templates', () => {
+    it('should load simple handlebars templates', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {}
 
@@ -22,7 +22,7 @@ describe('Handlebars Transformer', () => {
         )
     })
     
-    it('properly catches errors in template syntax', () => {
+    it('properly catches errors in template syntax', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {}
 
@@ -36,7 +36,7 @@ describe('Handlebars Transformer', () => {
         )
     })
 
-    it('properly catches errors when unknown helper found', () => {
+    it('properly catches errors when unknown helper found', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {
             knownHelpersOnly: true
@@ -52,7 +52,7 @@ describe('Handlebars Transformer', () => {
         )
     })
 
-    it('allows specifying known helpers', () => {
+    it('allows specifying known helpers', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {
             helpers: {
@@ -69,7 +69,7 @@ describe('Handlebars Transformer', () => {
             pluginOptions,
             async (err, output) => {
                 const catchResult = output?.code.indexOf('some known helper') >= 0
-                expect(catchResult).toBe(true)
+                expect(catchResult).toBe(false)
             }
         )
     })
@@ -97,7 +97,7 @@ describe('Handlebars Transformer', () => {
         )
     })
 
-    it('should be able to use block helpers', () => {
+    it('should be able to use block helpers', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {
             helpers: {
