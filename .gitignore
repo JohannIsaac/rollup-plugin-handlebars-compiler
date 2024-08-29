@@ -2,3 +2,5 @@ node_modules
 coverage
 tests/runtime/functions
 tests/runtime/results
+tests/plugin/dev.test.ts
+tests/runtime/dev.test.js
