@@ -6,7 +6,7 @@ import handlebars from '../../dist/es/index.js'
 export default {
 	input: 'tests/rollup/index.js',
 	output: {
-		file: 'tests/rollup//dist/topbar.js',
+		file: 'tests/rollup/dist/index.js',
 		format: 'iife'
 	},
     watch: {
