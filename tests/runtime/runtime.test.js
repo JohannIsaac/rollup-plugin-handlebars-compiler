@@ -68,6 +68,37 @@ describe('handlebars rutime', () => {
             }
         )
     })
+
+    it('should be able to use block helpers', async () => {
+        await testTemplate(
+            './with-block-helpers.hbs',
+            {
+                people: [
+                  {
+                    firstname: "Yehuda",
+                    lastname: "Katz",
+                  },
+                  {
+                    firstname: "Carl",
+                    lastname: "Lerche",
+                  },
+                  {
+                    firstname: "Alan",
+                    lastname: "Johnson",
+                  },
+                ],
+            },
+            async (err, output) => {
+                const catchOutput1 = output.includes('<ul>')
+                const catchOutput2 = output.includes('<li>Yehuda Katz</li>')
+                const catchOutput3 = output.includes('<li>Carl Lerche</li>')
+                const catchOutput4 = output.includes('<li>Alan Johnson</li>')
+                const catchOutput5 = output.includes('</ul>')
+                const result = catchOutput1 && catchOutput2 && catchOutput3 && catchOutput4 && catchOutput5
+                expect(result).toBe(true)
+            }
+        )
+    })
     
     it('should allow partials to be passed through the plugin options', async () => {
         await testTemplate(

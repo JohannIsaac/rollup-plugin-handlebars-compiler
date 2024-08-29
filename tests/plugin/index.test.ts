@@ -97,6 +97,28 @@ describe('Handlebars Transformer', () => {
         )
     })
 
+    it('should be able to use block helpers', () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            helpers: {
+                list: function(items: Array<object>, options) {
+                    const itemsAsHtml = items.map(item => "<li>" + options.fn(item) + "</li>");
+                    return "<ul>\n" + itemsAsHtml.join("\n") + "\n</ul>";
+                }
+            }
+        }
+
+        testTemplate(
+            './with-block-helpers.hbs',
+            pluginOptions,
+            async (err, output) => {
+                const catchOutput = lookupHelperRegistration('list', output.code)
+                expect(catchOutput).toBe(true)
+            }
+        )
+
+    })
+
     it('should allow partials to be passed through the plugin options', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {

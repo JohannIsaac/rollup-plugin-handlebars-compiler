@@ -4,3 +4,4 @@ tests/runtime/functions
 tests/runtime/results
 tests/plugin/dev.test.ts
 tests/runtime/dev.test.js
+tests/plugin/dev

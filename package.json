@@ -12,8 +12,8 @@
     "testplugin-coverage": "npm run testcompiler && npm run testruntime && npm run testcompiler-coverage-only",
     "testcompiler-coverage-only": "jest --coverage --silent tests/plugin/index.test.ts",
     "test-dev": "npm run testcompiler-dev && npm run testruntime-dev",
-    "testcompiler-dev": "jest -- tests/plugin/index.test.ts",
-    "testruntime-dev": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest -- tests/runtime/runtime.test.js",
+    "testcompiler-dev": "jest -- tests/plugin/dev.test.ts",
+    "testruntime-dev": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest -- tests/runtime/dev.test.js",
     "cleanup": "node cleanup.js",
     "finish": "node cleanup.js --finish",
     "testlint": "tslint -c tslint.json 'lib/*.ts'"
