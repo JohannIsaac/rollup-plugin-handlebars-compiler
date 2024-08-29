@@ -20,9 +20,16 @@ export default class HandlebarsCompiler {
         })
     }
 
-	private getCompiledPartials(): CompiledData[] {
+	private getCompiledPartials(file: string): CompiledData[] {
+		const extname = path.extname(file)
+		const basename = path.basename(file, extname)
+
+        const partials = this.partials.filter(([partial]) => {
+			return partial !== basename
+		})
+
 		const compiledPartials = [];
-		for (const [partial, source] of this.partials) {
+		for (const [partial, source] of partials) {
 			const compiled = Handlebars.precompile(source, this.compileOptions) as string
 			const compiledData: CompiledData = [partial, compiled]
 			compiledPartials.push(compiledData);
@@ -52,7 +59,7 @@ export default class HandlebarsCompiler {
 
 	// Compile handlebars file to ESM
 	compile(file: string): CompileResult {
-		const compiledPartials = this.getCompiledPartials()
+		const compiledPartials = this.getCompiledPartials(file)
 		const helpers = this.helpers
 		const templateData = this.templateData
 
