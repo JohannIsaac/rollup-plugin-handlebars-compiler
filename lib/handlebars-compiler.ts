@@ -13,6 +13,8 @@ export default class HandlebarsCompiler {
     partials: ParsedOptions.Partials
     helpers: ParsedOptions.Helpers
     templateData: ParsedOptions.TemplateData
+	imports: ParsedOptions.Imports
+	helperModules: ParsedOptions.HelperModules
 
     constructor(parsedOptions: ParsedOptions.IParsedOptions) {
         Object.entries(parsedOptions).forEach(([key, value]) => {
@@ -20,9 +22,16 @@ export default class HandlebarsCompiler {
         })
     }
 
-	private getCompiledPartials(): CompiledData[] {
+	private getCompiledPartials(file: string): CompiledData[] {
+		const extname = path.extname(file)
+		const basename = path.basename(file, extname)
+
+        const partials = this.partials.filter(([partial]) => {
+			return partial !== basename
+		})
+
 		const compiledPartials = [];
-		for (const [partial, source] of this.partials) {
+		for (const [partial, source] of partials) {
 			const compiled = Handlebars.precompile(source, this.compileOptions) as string
 			const compiledData: CompiledData = [partial, compiled]
 			compiledPartials.push(compiledData);
@@ -52,23 +61,23 @@ export default class HandlebarsCompiler {
 
 	// Compile handlebars file to ESM
 	compile(file: string): CompileResult {
-		const compiledPartials = this.getCompiledPartials()
-		const helpers = this.helpers
-		const templateData = this.templateData
+		const compiledPartials = this.getCompiledPartials(file)
 
 		const code = this.getTemplateSpecs(file) as TemplateSourceMap
 
 		// Import this (partial) template and nested templates
 		let body = `
 			import Handlebars from 'handlebars/runtime.js';
-			const template = Handlebars.template(${code});
-			${helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
+			${this.imports.map(([moduleName, importPath]) => `import ${moduleName} from '${importPath}'`).join('\n')}
+			${this.helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
+			${this.helperModules.map(([helper, moduleName]) => `Handlebars.registerHelper('${helper}', ${moduleName});`).join('\n')}
 			${compiledPartials.map(([partial, compiled]) => `Handlebars.registerPartial('${partial}', Handlebars.template(${compiled}));`).join('\n')}
+			const template = Handlebars.template(${code});
 			export default (data, options) => {
 				if (!data || typeof data !== 'object') {
 					data = {}
 				}
-				let templateData = Object.assign({}, ${JSON.stringify(templateData)}, data)
+				let templateData = Object.assign({}, ${JSON.stringify(this.templateData)}, data)
 				return template(templateData, options)
 			};
 		`;

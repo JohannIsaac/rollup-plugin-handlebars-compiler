@@ -240,6 +240,10 @@ The plugin resolves partials and helpers automatically. They are looked up relat
 {{! src/partial/file.hbs }}
 {{> template }} will reference "src/partials/template.hbs" if this file exists.
 {{> ../template }} will reference "src/template.hbs" if this file exists.
+{{helper}} will reference the helper "src/helper.js" if this file exists.
+{{../helper}} will reference "helper.js" if this file exists.
+{{./nested/helper}} will reference the helper "/src/nested/helper.js" if this file exists.
+{{[nested/helper] 'helper parameter'}} will reference the helper "/src/nested/helper.js" if this file exists, passes 'helper parameter' as first parameter to helper.
 ```
 
 The plugin will automatically resolve any nested partials. However, if a relative partial path's name collides with any partial name passed through the plugin options, the partial passed through the plugin options takes precedence.

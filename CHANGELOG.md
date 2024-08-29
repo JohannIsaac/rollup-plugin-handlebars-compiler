@@ -125,3 +125,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed precompile options as passable plugin options as these are currently unnecessary and may be unwanted (this can later be added as a feature)
 - Added README and test example of passing hbs files to the `partials` plugin options
+
+
+
+## [1.1.3](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/16)  2020-8-29
+
+### Added
+
+- Added support for nested partials
+- Unit tests for referencing partials from ancestor/parent/cousin-dirs
+
+### Changed
+
+- Fix: Fixed critical bug where passing no plugin options throws an error
+- Fix: Removed registering the context template file as a partial
+- Added README and test example of passing hbs files to the `partials` plugin options

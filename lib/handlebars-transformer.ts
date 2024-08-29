@@ -1,18 +1,19 @@
 import path from 'path';
-import PartialsProcessor from './partials-processor';
+import StatementsProcessor from './statements-processor';
 import pluginOptions from './plugin-options';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
 import { CompileResult } from './types/handlebars';
 import HandlebarsCompiler from './handlebars-compiler';
 import { SourceMap } from './source-map';
+import { ImportsMap } from './imports-map';
 
 export default class HandlebarsTransformer {
     handlebarsPluginOptions: HandlebarsPluginOptions
     cache: Map<string, string>
 	files: string[]
 
-    constructor(handlebarsPluginOptions: HandlebarsPluginOptions) {
+    constructor(handlebarsPluginOptions: HandlebarsPluginOptions = {}) {
         this.handlebarsPluginOptions = handlebarsPluginOptions
         this.cache = new Map();
         this.files = [];
@@ -31,11 +32,18 @@ export default class HandlebarsTransformer {
 	// Convert to ESM and register partial
 	transform(source: string, file: string): CompileResult {
 		
-		const partialsSourceMap = this.getPartialsSourceMap(source, file)
+		const statementsProcessor = this.getStatementsProcessor(source, file)
+		const partialsSourceMap = new SourceMap(statementsProcessor.partials)
 		const partialEntries = this.processPartialsSourceMap(source, partialsSourceMap)
+
+		const importsMap = new ImportsMap(statementsProcessor.helpers)
+		const imports = importsMap.getImports()
+		const helperModules = importsMap.getHelperModules()
 
 		const parsedOptions = pluginOptions.parse(this.handlebarsPluginOptions)
 		parsedOptions.partials.push(...partialEntries)
+		parsedOptions.imports.push(...imports)
+		parsedOptions.helperModules.push(...helperModules)
 
 		const compiler = new HandlebarsCompiler(parsedOptions)
 		const data = compiler.compile(file)
@@ -43,17 +51,16 @@ export default class HandlebarsTransformer {
 		return data
 	}
 
-	private getPartialsSourceMap(source: string, file: string) {
+	private getStatementsProcessor(source: string, file: string) {
 		const name = path.basename(file);
 
-		const partialsProcessor = new PartialsProcessor(this.handlebarsPluginOptions)
-		const partialsSourceMap = partialsProcessor.getSourceMap({
+		const statementsProcessor = new StatementsProcessor({
 			name,
 			source,
 			rootFile: file
-		});
+		}, this.handlebarsPluginOptions)
 
-		return partialsSourceMap
+		return statementsProcessor
 	}
 
 	private processPartialsSourceMap(file: string, sourceMap: SourceMap) {

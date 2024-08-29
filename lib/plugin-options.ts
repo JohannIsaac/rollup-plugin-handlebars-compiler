@@ -20,7 +20,9 @@ function parse(handlebarsPluginOptions: HandlebarsPluginOptions): ParsedOptions.
         compileOptions: getCompileOptions(handlebarsPluginOptions),
         partials: getPartials(handlebarsPluginOptions.partials),
         helpers: getHelpers(handlebarsPluginOptions.helpers),
-        templateData: getTemplateData(handlebarsPluginOptions.templateData)
+        templateData: getTemplateData(handlebarsPluginOptions.templateData),
+        imports: [],
+        helperModules: []
     }
     return parsedOptions
 }

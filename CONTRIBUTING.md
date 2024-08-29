@@ -25,4 +25,5 @@ If you'd like to discuss a change you want to make before spending the time to w
 
 ### Testing
 
-- Run `npm run test` to run unit tests and output test HTML results. HTML output results can be found in [./src/runtime-tests] in the `results` directory.
+- Run `npm run test` to run unit tests and output test HTML results. HTML output results can be found in [./tests/runtime/output] in the `results` directory, while JS template functions can be found in [./tests/runtime/functions].
+- To write your own Jest tests, create a `plugin/dev.test.ts` and a `runtime/dev.test.ts` in the `tests` directory. Examples can be found in `plugin/dev.sample.test.ts` and `runtime/dev.sample.test.ts`.

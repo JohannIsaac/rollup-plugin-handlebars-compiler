@@ -1,4 +1,8 @@
 node_modules
 coverage
-runtime-tests/functions
-runtime-tests/results
+tests/runtime/functions
+tests/runtime/results
+tests/plugin/dev.test.ts
+tests/runtime/dev.test.js
+tests/plugin/dev
+tests/rollup/dist
