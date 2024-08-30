@@ -3,9 +3,7 @@
 /* You can put your own test Handlebars templates in the `../src/dev/` directory */
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
-import { removeOutputDir, testTemplate } from './utils';
-
-removeOutputDir()
+import { testTemplate } from './helpers';
 
 describe('Handlebars Transformer', () => {
 
@@ -16,6 +14,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/simple.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
             }
@@ -31,6 +30,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/dev/template.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
             }
