@@ -3,8 +3,6 @@ import path from 'path';
 
 const pathToSrc = '../src'
 
-const pathToSrc = '../src'
-
 const testResultsDir = './results'
 const absoluteTestResultsDir = path.resolve(__dirname, testResultsDir)
 export function removeTestResultsDir() {

@@ -9,16 +9,7 @@ import { js_beautify } from 'js-beautify';
 
 type TestFn = (err: Error, output: CompileResult) => {}
 
-<<<<<<< HEAD:dev-tests/compiler/helpers.ts
 const absoluteTestFunctionsDir = path.join(__dirname, '../runtime/functions')
-=======
-const testFileDir = '../'
-const pathToSrc = '../src'
-const absoluteSrcPath = path.join(__dirname, pathToSrc)
-
-const testFunctionsDir = '../../runtime/functions'
-const absoluteTestFunctionsDir = path.join(__dirname, testFunctionsDir)
->>>>>>> 9e52103684e46341559c728386fbb10e856da966:tests/compiler/utils/index.ts
 export function removeOutputDir() {
     if (fs.existsSync(absoluteTestFunctionsDir)) {
         fs.rmdirSync(absoluteTestFunctionsDir, { recursive: true });
@@ -30,12 +21,9 @@ function loadTemplate(templatePath: string) {
 }
 
 function createFunctionFile(template: string, output: CompileResult) {
-<<<<<<< HEAD:dev-tests/compiler/helpers.ts
 
     const absoluteSrcPath = path.join(__dirname, '../src/')
 
-=======
->>>>>>> 9e52103684e46341559c728386fbb10e856da966:tests/compiler/utils/index.ts
     const absoluteTemplatePath = path.join(__dirname, template)
     const templatePathFromSrc = path.relative(absoluteSrcPath, absoluteTemplatePath)
 
