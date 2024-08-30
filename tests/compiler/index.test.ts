@@ -14,7 +14,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './simple.hbs',
+            '../src/simple.hbs',
             pluginOptions,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
@@ -27,7 +27,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './invalid-syntax-error.hbs',
+            '../src/invalid-syntax-error.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchError = err?.message.includes("Parse error")
@@ -43,7 +43,7 @@ describe('Handlebars Transformer', () => {
         }
 
         testTemplate(
-            './invalid-unknown-helpers.hbs',
+            '../src/invalid-unknown-helpers.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchError = err?.message.includes("You specified knownHelpersOnly")
@@ -65,11 +65,11 @@ describe('Handlebars Transformer', () => {
         }
 
         testTemplate(
-            './with-known-helpers.hbs',
+            '../src/with-known-helpers.hbs',
             pluginOptions,
             async (err, output) => {
-                const catchResult = output?.code.indexOf('some known helper') >= 0
-                expect(catchResult).toBe(false)
+                const catchResult = lookupHelperRegistration('someKnownHelper', output?.code)
+                expect(catchResult).toBe(true)
             }
         )
     })
@@ -78,7 +78,7 @@ describe('Handlebars Transformer', () => {
     // with-inline-requires.hbs
 
     it('should be able to use commonJS helpers', async () => {
-        let module = await import('./helpers-commonjs/descriptionHelper.js')
+        let module = await import('../src/helpers-commonjs/descriptionHelper.js')
         let descriptionHelper = module.default
 
         const pluginOptions: HandlebarsPluginOptions = {
@@ -88,7 +88,7 @@ describe('Handlebars Transformer', () => {
         }
 
         testTemplate(
-            './with-helpers-commonjs.hbs',
+            '../src/with-helpers-commonjs.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput = lookupHelperRegistration('descriptionHelper', output?.code)
@@ -109,7 +109,7 @@ describe('Handlebars Transformer', () => {
         }
 
         testTemplate(
-            './with-block-helpers.hbs',
+            '../src/with-block-helpers.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput = lookupHelperRegistration('list', output.code)
@@ -123,12 +123,12 @@ describe('Handlebars Transformer', () => {
 
         const pluginOptions: HandlebarsPluginOptions = {
             partials: {
-                otherPartial: fs.readFileSync(path.join(__dirname, './partialDirs/anotherDir/otherPartial.hbs')).toString()
+                otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
         }
 
         testTemplate(
-            './with-plugin-partial.hbs',
+            '../src/with-plugin-partial.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('otherPartial', output?.code)
@@ -141,15 +141,15 @@ describe('Handlebars Transformer', () => {
 
         const pluginOptions: HandlebarsPluginOptions = {
             partials: {
-                otherPartial: fs.readFileSync(path.join(__dirname, './partialDirs/anotherDir/otherPartial.hbs')).toString()
+                otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
         }
 
         testTemplate(
-            './with-plugin-partial.hbs',
+            '../src/with-plugin-partial.hbs',
             pluginOptions,
             async (err, output) => {
-                const catchOutput = output?.code.indexOf("Handlebars.registerPartial('otherPartial") >= 0
+                const catchOutput = lookupPartialRegistration('otherPartial', output?.code)
                 expect(catchOutput).toBe(true)
             }
         )
@@ -160,7 +160,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './with-dir-partials.hbs',
+            '../src/with-dir-partials.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput1 = lookupPartialRegistration('partialDirs/otherPartial', output?.code)
@@ -178,7 +178,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './nested-templates/nested/with-ancestor-dir-partial.hbs',
+            '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('../../some-partial', output?.code)
@@ -192,7 +192,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './nested-templates/with-parent-dir-partial.hbs',
+            '../src/nested-templates/with-parent-dir-partial.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('../some-partial', output?.code)
@@ -206,7 +206,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './nested-templates/with-cousin-dir-partial.hbs',
+            '../src/nested-templates/with-cousin-dir-partial.hbs',
             pluginOptions,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('../partialDirs/anotherDir/otherPartial', output?.code)
@@ -220,10 +220,10 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './with-partial-block.hbs',
+            '../src/with-partial-block.hbs',
             pluginOptions,
             async (err, output) => {
-                const catchOutput = output?.code.indexOf("<div>Failover</div>") >= 0
+                const catchOutput = output?.code.includes("<div>Failover</div>")
                 expect(catchOutput).toBe(true)
             }
         )
@@ -234,10 +234,10 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './with-inline-partial.hbs',
+            '../src/with-inline-partial.hbs',
             pluginOptions,
             async (err, output) => {
-                const catchOutput = output?.code.indexOf("printFoo") >= 0
+                const catchOutput = output?.code.includes("printFoo")
                 expect(catchOutput).toBe(true)
             }
         )
