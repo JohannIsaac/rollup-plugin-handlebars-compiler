@@ -4,6 +4,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const pathToSrc = '../src'
+
 const testResultsDir = './results'
 const absoluteTestResultsDir = path.resolve(__dirname, testResultsDir)
 export function removeTestResultsDir() {
@@ -13,7 +15,9 @@ export function removeTestResultsDir() {
 }
 
 function createTemplateTestResult(template, output) {
-    const resultsDirectory = path.dirname(template)
+    const templatePathFromSrc = path.relative(pathToSrc, template)
+
+    const resultsDirectory = path.dirname(templatePathFromSrc)
     const extname = path.extname(template)
     const basename = path.basename(template, extname)
     const filename = `${basename}.html`
@@ -31,7 +35,9 @@ function createTemplateTestResult(template, output) {
 }
 
 function getTemplateModulePath(template) {
-    const templateDir = path.dirname(template)
+    const templatePathFromSrc = path.relative(pathToSrc, template)
+
+    const templateDir = path.dirname(templatePathFromSrc)
     const extname = path.extname(template)
     const basename = path.basename(template, extname)
     const moduleName = `${basename}.js`

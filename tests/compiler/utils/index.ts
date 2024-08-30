@@ -10,6 +10,8 @@ import { CompileResult } from '../../../lib/types/handlebars';
 type TestFn = (err: Error, output: CompileResult) => {}
 
 const testFileDir = '../'
+const pathToSrc = '../src'
+const absoluteSrcPath = path.join(__dirname, pathToSrc)
 
 const testFunctionsDir = '../../runtime/functions'
 const absoluteTestFunctionsDir = path.join(__dirname, testFunctionsDir)
@@ -24,11 +26,14 @@ function loadTemplate(templatePath: string) {
 }
 
 function createFunctionFile(template: string, output: CompileResult) {
-    const templatePath = path.join(__dirname, template)
+    const absoluteTemplatePath = path.join(__dirname, template)
+    const templatePathFromSrc = path.relative(absoluteSrcPath, absoluteTemplatePath)
+
     const extname = path.extname(template)
-    const outputTemplate = path.join(absoluteTestFunctionsDir, template)
+    const outputTemplate = path.join(absoluteTestFunctionsDir, templatePathFromSrc)
+
     const outputDir = path.dirname(outputTemplate)
-    const outputName = `${path.basename(templatePath, extname)}.js`
+    const outputName = `${path.basename(template, extname)}.js`
     const outputPath = path.join(outputDir, outputName)
     if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
