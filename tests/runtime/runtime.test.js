@@ -17,7 +17,7 @@ describe('handlebars rutime', () => {
 
     it('should render simple handleabrs template', async () => {
         await testTemplate(
-            './simple.hbs',
+            '../src/simple.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput1 = output.includes("Title")
@@ -29,7 +29,7 @@ describe('handlebars rutime', () => {
 
     it('properly catches errors in template syntax', async () => {
         await testTemplate(
-            './invalid-syntax-error.hbs',
+            '../src/invalid-syntax-error.hbs',
             {},
             async (err, output) => {
                 expect(output).toBeFalsy()
@@ -39,7 +39,7 @@ describe('handlebars rutime', () => {
     
     it('properly catches errors when unknown helper found', async () => {
         await testTemplate(
-            './invalid-unknown-helpers.hbs',
+            '../src/invalid-unknown-helpers.hbs',
             {},
             async (err, output) => {
                 expect(output).toBeFalsy()
@@ -49,7 +49,7 @@ describe('handlebars rutime', () => {
     
     it('allows specifying known helpers', async () => {
         await testTemplate(
-            './with-known-helpers.hbs',
+            '../src/with-known-helpers.hbs',
             {},
             async (err, output) => {
                 const catchOutput = output.includes("some known helper")
@@ -60,7 +60,7 @@ describe('handlebars rutime', () => {
     
     it('should be able to use commonJS helpers', async () => {
         await testTemplate(
-            './with-helpers-commonjs.hbs',
+            '../src/with-helpers-commonjs.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("Description Description")
@@ -71,7 +71,7 @@ describe('handlebars rutime', () => {
 
     it('should be able to use block helpers', async () => {
         await testTemplate(
-            './with-block-helpers.hbs',
+            '../src/with-block-helpers.hbs',
             {
                 people: [
                   {
@@ -102,7 +102,7 @@ describe('handlebars rutime', () => {
     
     it('should allow partials to be passed through the plugin options', async () => {
         await testTemplate(
-            './with-plugin-partial.hbs',
+            '../src/with-plugin-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("<p>another: Description</p>")
@@ -113,7 +113,7 @@ describe('handlebars rutime', () => {
     
     it('should allow partials to find multiple paths', async () => {
         await testTemplate(
-            './with-dir-partials.hbs',
+            '../src/with-dir-partials.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput1 = output.includes("<h1>Title</h1>")
@@ -127,7 +127,7 @@ describe('handlebars rutime', () => {
     
     it('should allow partials from ancestor directory', async () => {
         await testTemplate(
-            './nested-templates/nested/with-ancestor-dir-partial.hbs',
+            '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("<p>Description</p>")
@@ -138,7 +138,7 @@ describe('handlebars rutime', () => {
     
     it('should allow partials from parent directory', async () => {
         await testTemplate(
-            './nested-templates/with-parent-dir-partial.hbs',
+            '../src/nested-templates/with-parent-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("<p>Description</p>")
@@ -149,7 +149,7 @@ describe('handlebars rutime', () => {
     
     it('should allow partials from cousin directory', async () => {
         await testTemplate(
-            './nested-templates/with-cousin-dir-partial.hbs',
+            '../src/nested-templates/with-cousin-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("<p>another: Description</p>")
@@ -160,7 +160,7 @@ describe('handlebars rutime', () => {
     
     it('should use failover content of the partial block if it refers to non-existent partial', async () => {
         await testTemplate(
-            './with-partial-block.hbs',
+            '../src/with-partial-block.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("<div>Failover</div>")
@@ -171,7 +171,7 @@ describe('handlebars rutime', () => {
     
     it('should recognize and render inline partials', async () => {
         await testTemplate(
-            './with-inline-partial.hbs',
+            '../src/with-inline-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("Foo")

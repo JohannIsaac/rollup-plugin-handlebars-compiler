@@ -3,6 +3,6 @@ export default {
       '^.+\\.ts?$': 'ts-jest'
     },
     testEnvironment: 'node',
-    testRegex: '/tests/(plugin|runtime)/.*\\.test?\\.(ts|js)$',
+    testRegex: '/tests/(rollup|compiler|runtime)/.*\\.test?\\.(ts|js)$',
     moduleFileExtensions: ['ts', 'js']
 };

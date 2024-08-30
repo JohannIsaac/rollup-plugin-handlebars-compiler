@@ -1,6 +1,6 @@
 /* Sample dev.test.ts */
 
-/* You can put your own test Handlebars templates in the `/tests/plugin/dev/` directory */
+/* You can put your own test Handlebars templates in the `../src/dev/` directory */
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
 import { removeOutputDir, testTemplate } from './utils';
@@ -14,7 +14,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './simple.hbs',
+            '../src/simple.hbs',
             pluginOptions,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
@@ -29,7 +29,7 @@ describe('Handlebars Transformer', () => {
         const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
-            './dev/template.hbs',
+            '../src/dev/template.hbs',
             pluginOptions,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
