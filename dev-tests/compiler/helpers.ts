@@ -1,20 +1,15 @@
 import fs from 'fs';
 import path from 'path';
+
+import HandlebarsTransformer from '../../lib/handlebars-transformer';
+
+import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
+import { CompileResult } from '../../lib/types/handlebars';
 import { js_beautify } from 'js-beautify';
-
-import HandlebarsTransformer from '../../../lib/handlebars-transformer';
-
-import { HandlebarsPluginOptions } from '../../../lib/types/plugin-options';
-import { CompileResult } from '../../../lib/types/handlebars';
 
 type TestFn = (err: Error, output: CompileResult) => {}
 
-const testFileDir = '../'
-const pathToSrc = '../src'
-const absoluteSrcPath = path.join(__dirname, pathToSrc)
-
-const testFunctionsDir = '../../runtime/functions'
-const absoluteTestFunctionsDir = path.join(__dirname, testFunctionsDir)
+const absoluteTestFunctionsDir = path.join(__dirname, '../runtime/functions')
 export function removeOutputDir() {
     if (fs.existsSync(absoluteTestFunctionsDir)) {
         fs.rmdirSync(absoluteTestFunctionsDir, { recursive: true });
@@ -26,6 +21,9 @@ function loadTemplate(templatePath: string) {
 }
 
 function createFunctionFile(template: string, output: CompileResult) {
+
+    const absoluteSrcPath = path.join(__dirname, '../src/')
+
     const absoluteTemplatePath = path.join(__dirname, template)
     const templatePathFromSrc = path.relative(absoluteSrcPath, absoluteTemplatePath)
 
@@ -41,14 +39,15 @@ function createFunctionFile(template: string, output: CompileResult) {
     let code: string = output?.code || ''
     code = !code ? code : js_beautify(code)
     fs.writeFileSync(outputPath, code)
+    console.log('\x1b[36mGenerated', `${outputPath}\x1b[0m`)
 }
 
-export function testTemplate(template: string, pluginOptions: HandlebarsPluginOptions, testFn: TestFn) {
+export function testTemplate(template: string, pluginOptions: HandlebarsPluginOptions, toOutputFiles: boolean = true, testFn?: TestFn) {
 
     let err: Error | undefined
     const hbsTransformer = new HandlebarsTransformer(pluginOptions)
 
-    const templatePath = path.join(__dirname, testFileDir, template)
+    const templatePath = path.join(__dirname, template)
     
     let source: string | null = null
     try {
@@ -65,8 +64,8 @@ export function testTemplate(template: string, pluginOptions: HandlebarsPluginOp
         err = e
     }
 
-    testFn(err, output)
+    if (testFn) testFn(err, output)
 
-    createFunctionFile(template, output)
+    if (toOutputFiles) createFunctionFile(template, output)
 
 }

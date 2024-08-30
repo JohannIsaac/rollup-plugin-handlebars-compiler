@@ -6,3 +6,9 @@ tests/compiler/dev.test.ts
 tests/runtime/dev.test.js
 tests/src/dev
 tests/rollup/dist
+dev-tests/compiler/dev.test.ts
+dev-tests/runtime/dev.test.js
+dev-tests/runtime/functions
+dev-tests/runtime/results
+dev-tests/src/*
+!dev-tests/src/simple.hbs

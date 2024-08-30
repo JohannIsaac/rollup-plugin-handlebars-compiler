@@ -13,7 +13,7 @@ If you'd like to discuss a change you want to make before spending the time to w
 4. If you are adding a feature, make sure it is documented in the `README.md` file.
 5. Update the `CHANGELOG.md` file to reflect your change.
 
-To read more about unit tests and writing your own, see [./tests/README.md]
+To read more about unit tests, see [./tests/README.md](./tests/README.md)
 
 
 

@@ -3,11 +3,9 @@ import path from 'path';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
 import { lookupHelperRegistration, lookupPartialRegistration } from './utils/utils';
-import { removeOutputDir, testTemplate } from './utils';
+import { testTemplate } from './helpers';
 
-removeOutputDir()
-
-describe('Handlebars Transformer', () => {
+describe('Handlebars Compiler', () => {
 
     it('should load simple handlebars templates', async () => {
 
@@ -16,6 +14,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/simple.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
             }
@@ -29,6 +28,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/invalid-syntax-error.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchError = err?.message.includes("Parse error")
                 expect(catchError).toBe(true)
@@ -45,6 +45,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/invalid-unknown-helpers.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchError = err?.message.includes("You specified knownHelpersOnly")
                 expect(catchError).toBe(true)
@@ -67,6 +68,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-known-helpers.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchResult = lookupHelperRegistration('someKnownHelper', output?.code)
                 expect(catchResult).toBe(true)
@@ -90,6 +92,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-helpers-commonjs.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupHelperRegistration('descriptionHelper', output?.code)
                 expect(catchOutput).toBe(true)
@@ -111,6 +114,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-block-helpers.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupHelperRegistration('list', output.code)
                 expect(catchOutput).toBe(true)
@@ -130,6 +134,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-plugin-partial.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('otherPartial', output?.code)
                 expect(catchOutput).toBe(true)
@@ -148,6 +153,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-plugin-partial.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('otherPartial', output?.code)
                 expect(catchOutput).toBe(true)
@@ -162,6 +168,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-dir-partials.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput1 = lookupPartialRegistration('partialDirs/otherPartial', output?.code)
                 const catchOutput2 = lookupPartialRegistration('partialDirs/anotherDir/otherPartial', output?.code)
@@ -180,6 +187,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('../../some-partial', output?.code)
                 expect(catchOutput).toBe(true)
@@ -194,6 +202,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/nested-templates/with-parent-dir-partial.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('../some-partial', output?.code)
                 expect(catchOutput).toBe(true)
@@ -208,6 +217,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/nested-templates/with-cousin-dir-partial.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = lookupPartialRegistration('../partialDirs/anotherDir/otherPartial', output?.code)
                 expect(catchOutput).toBe(true)
@@ -222,6 +232,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-partial-block.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = output?.code.includes("<div>Failover</div>")
                 expect(catchOutput).toBe(true)
@@ -236,6 +247,7 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/with-inline-partial.hbs',
             pluginOptions,
+            false,
             async (err, output) => {
                 const catchOutput = output?.code.includes("printFoo")
                 expect(catchOutput).toBe(true)
