@@ -16,7 +16,7 @@
     "test-rollup-bundler": "jest -- tests/rollup/index.test.ts",
     "test-rollup-dist": "jest -- tests/rollup/dist.test.ts",
     "build-test-files": "npm run generate-runtime-test-files && npm run generate-rollup-dist-files",
-    "build-compiler-preparations": "rollup --config tests/compiler/rollup.config.cjs",
+    "build-compiler-preparations": "rollup --config tests/compiler/rollup.config.js",
     "generate-runtime-test-files": "node tests/compiler/generate-runtime-test-files.cjs",
     "generate-rollup-dist-files": "tsx tests/rollup/generate-dist-files.ts",
     "test-admin": "npm run build-test-files-admin && jest --coverage --verbose",
