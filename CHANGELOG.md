@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.3](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/29)  2020-8-29
+
+### Changed
+
+- Fixed support for CJS version of plugin
+
+
+
 ## [1.1.3](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/16)  2020-8-29
 
 ### Added
