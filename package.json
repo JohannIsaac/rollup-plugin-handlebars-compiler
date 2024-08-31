@@ -36,7 +36,6 @@
     "type": "git",
     "url": "git+https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler.git"
   },
-  "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.js",
   "exports": {
