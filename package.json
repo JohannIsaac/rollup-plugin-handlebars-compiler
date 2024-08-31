@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-handlebars-compiler",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Rollup plugin to compile Handlebars templates to JavaScript with partials, helpers, and precompile options.",
   "scripts": {
     "build": "rollup --config",
@@ -37,12 +37,11 @@
     "url": "git+https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler.git"
   },
   "type": "module",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/es/index.js",
+  "main": "./dist/es/index.js",
   "exports": {
-    "types": "./types/index.d.ts",
+    "require": "./dist/cjs/index.cjs",
     "import": "./dist/es/index.js",
-    "default": "./dist/cjs/index.js"
+    "types": "./types/index.d.ts"
   },
   "engines": {
     "node": ">=14.0.0"
