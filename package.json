@@ -5,33 +5,25 @@
   "scripts": {
     "build": "rollup --config",
     "dev": "rollup --config --watch --environment BUILD:development",
-    
     "test": "npm run testlint && npm run test-jest",
     "test-jest": "npm run build-test-files && jest --coverage --verbose",
     "test-dev": "npm run test-compiler-transformer-dev && npm run test-compiler-runtime-dev",
-    
     "testlint": "tslint -c tslint.json 'lib/*.ts'",
-    
     "test-compiler": "npm run test-rollup-bundler && test-rollup-dist",
     "test-compiler-transformer": "jest -- tests/compiler/index.test.ts",
     "test-compiler-runtime": "jest -- tests/runtime/runtime.test.js",
-    
     "test-rollup": "npm run test-rollup-bundler && test-rollup-dist",
     "test-rollup-bundler": "jest -- tests/rollup/index.test.ts",
     "test-rollup-dist": "jest -- tests/rollup/dist.test.ts",
-    
     "build-test-files": "npm run generate-runtime-test-files && npm run generate-rollup-dist-files",
     "build-compiler-preparations": "rollup --config tests/compiler/rollup.config.js",
     "generate-runtime-test-files": "node tests/compiler/generate-runtime-test-files.cjs",
     "generate-rollup-dist-files": "tsx tests/rollup/generate-dist-files.ts",
-    
     "test-admin": "npm run build-test-files-admin && jest --coverage --verbose",
     "test-jest-admin": "npm run build-test-files-admin && jest --coverage --verbose",
     "build-test-files-admin": "npm run build-compiler-preparations && npm run generate-runtime-test-files && npm run generate-rollup-dist-files",
-
     "test-compiler-transformer-dev": "jest --testNamePattern=(/__tests__/.*|(\\.|/)(dev.test)\\.[jt]sx?$ --testPathIgnorePatterns=''",
     "test-compiler-runtime-dev": "jest --testNamePattern=(/__tests__/.*|(\\.|/)(dev.test)\\.[jt]sx?$ --testPathIgnorePatterns=''",
-
     "build-dev-tests": "node build-dev-tests.cjs"
   },
   "files": [
@@ -78,11 +70,8 @@
     "rollup": "^2.78.0||^3.0.0||^4.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/plugin-transform-modules-commonjs": "^7.24.8",
     "@babel/preset-env": "^7.25.4",
     "@rollup/plugin-commonjs": "^26.0.1",
-    "@rollup/plugin-esm-shim": "^0.1.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
@@ -97,9 +86,7 @@
     "rollup": "^4.21.0",
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-dts": "^6.1.1",
-    "rollup-plugin-inject": "^3.0.2",
     "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
     "tslib": "^2.7.0",
     "tslint": "^6.1.3",
     "tsx": "^4.19.0",

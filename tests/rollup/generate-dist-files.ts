@@ -1,4 +1,4 @@
-import { BUILDS, generateBundle, generateOutputs } from "./utils.js"
+import { BUILDS, generateBundle, generateOutputs } from "./utils"
 
 async function generateDistFiles() {
     try {
