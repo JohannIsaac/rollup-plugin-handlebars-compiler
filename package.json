@@ -16,7 +16,7 @@
     "test-rollup-bundler": "jest -- tests/rollup/index.test.ts",
     "test-rollup-dist": "jest -- tests/rollup/dist.test.ts",
     "build-test-files": "npm run generate-runtime-test-files && npm run generate-rollup-dist-files",
-    "build-compiler-preparations": "rollup --config tests/compiler/rollup.config.mjs",
+    "build-compiler-preparations": "rollup --config tests/compiler/rollup.config.cjs",
     "generate-runtime-test-files": "node tests/compiler/generate-runtime-test-files.cjs",
     "generate-rollup-dist-files": "tsx tests/rollup/generate-dist-files.ts",
     "test-admin": "npm run build-test-files-admin && jest --coverage --verbose",
@@ -36,12 +36,12 @@
     "type": "git",
     "url": "git+https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler.git"
   },
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/es/index.js",
+  "type": "module",
+  "main": "./dist/es/index.js",
   "exports": {
-    "types": "./types/index.d.ts",
+    "require": "./dist/cjs/index.cjs",
     "import": "./dist/es/index.js",
-    "default": "./dist/cjs/index.js"
+    "types": "./types/index.d.ts"
   },
   "engines": {
     "node": ">=14.0.0"

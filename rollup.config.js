@@ -27,7 +27,8 @@ const MAIN_CONFIG = {
         },
         {
             dir: `dist/cjs`,
-            format: 'cjs'
+            format: 'cjs',
+            entryFileNames: '[name].cjs',
         }
     ],
     plugins: [
