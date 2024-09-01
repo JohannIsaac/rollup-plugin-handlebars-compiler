@@ -14,29 +14,11 @@ describe('Handlebars Transformer', () => {
         testTemplate(
             '../src/simple.hbs',
             pluginOptions,
-            false,
+            true,
             async (err, output) => {
                 expect(output).toHaveProperty('code')
             }
         )
     })
-
-    /* ------ Write your own Jest tests -----
-
-    it('should load simple handlebars templates', () => {
-
-        const pluginOptions: HandlebarsPluginOptions = {}
-
-        testTemplate(
-            '../src/dev/template.hbs',
-            pluginOptions,
-            false,
-            async (err, output) => {
-                expect(output).toHaveProperty('code')
-            }
-        )
-    })
-
-    --------------------------------------- */
 
 })
