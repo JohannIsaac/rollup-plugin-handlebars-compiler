@@ -22,6 +22,8 @@ describe('handlebars rutime', () => {
                 title: 'Title'
             },
             async (err, output) => {
+                if (err) fail(err.message)
+                console.log('output', output)
                 const catchOutput1 = output.includes("Title")
                 const catchOutput2 = output.includes("A simple template")
                 expect(catchOutput1 && catchOutput2).toBe(true)
