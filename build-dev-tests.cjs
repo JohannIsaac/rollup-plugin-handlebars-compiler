@@ -13,7 +13,6 @@ const compilerFiles = [
 ]
 
 const runtimeFiles = [
-    'runtime.test.js',
     'utils.js',
 ]
 
