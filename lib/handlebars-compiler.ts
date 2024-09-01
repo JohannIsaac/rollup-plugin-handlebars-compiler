@@ -8,6 +8,20 @@ import { CompileResult, TemplateSourceMap, TemplateSpecification } from './types
 
 type CompiledData = [string, TemplateSpecification]
 
+// Need to manually set to export to package
+export type CompileOptions = {
+	data?: boolean;
+	compat?: boolean;
+	knownHelpers?: KnownHelpers;
+	knownHelpersOnly?: boolean;
+	noEscape?: boolean;
+	strict?: boolean;
+	assumeObjects?: boolean;
+	preventIndent?: boolean;
+	ignoreStandalone?: boolean;
+	explicitPartialContext?: boolean;
+}
+
 export default class HandlebarsCompiler {
     compileOptions: CompileOptions
     partials: ParsedOptions.Partials

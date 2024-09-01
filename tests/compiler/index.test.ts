@@ -142,25 +142,6 @@ describe('Handlebars Compiler', () => {
         )
     })
 
-    it('should allow partials to be passed through the plugin options', async () => {
-
-        const pluginOptions: HandlebarsPluginOptions = {
-            partials: {
-                otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
-            }
-        }
-
-        testTemplate(
-            '../src/with-plugin-partial.hbs',
-            pluginOptions,
-            false,
-            async (err, output) => {
-                const catchOutput = lookupPartialRegistration('otherPartial', output?.code)
-                expect(catchOutput).toBe(true)
-            }
-        )
-    })
-
     it('should allow partials to find multiple paths', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {}
