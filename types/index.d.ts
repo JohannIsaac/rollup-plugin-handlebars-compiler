@@ -1,5 +1,18 @@
 import { Plugin } from 'rollup';
 
+type CompileOptions = {
+    data?: boolean;
+    compat?: boolean;
+    knownHelpers?: KnownHelpers;
+    knownHelpersOnly?: boolean;
+    noEscape?: boolean;
+    strict?: boolean;
+    assumeObjects?: boolean;
+    preventIndent?: boolean;
+    ignoreStandalone?: boolean;
+    explicitPartialContext?: boolean;
+};
+
 type TemplateData = object;
 type Helpers = {
     [key: string]: Function;

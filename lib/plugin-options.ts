@@ -1,3 +1,4 @@
+import { CompileOptions } from './handlebars-compiler';
 import { HandlebarsPluginOptions } from './types/plugin-options';
 import type * as PluginOptions from './types/plugin-options/params'
 import type * as ParsedOptions from './types/plugin-options/parsed'
