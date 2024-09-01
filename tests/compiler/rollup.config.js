@@ -1,6 +1,7 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonJS from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import run from '@rollup/plugin-run';
 import path from 'path';
 import { fileURLToPath } from 'url';
 const filepath = fileURLToPath(import.meta.url)
@@ -20,5 +21,6 @@ export default {
         }),
         nodeResolve(),
         commonJS(),
+        run()
     ]
 };
