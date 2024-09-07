@@ -8,7 +8,7 @@ import { extractModulesAndAssets } from './template-parser/extractModulesAndAsse
 import { InputAsset } from './template-parser/InputData';
 import { sourceAttributesByTag } from './template-parser/utils';
 
-export const ROOT_PATH_KEY = '_ROOT_/'
+export const ROOT_PATH_KEY = '__ROOT__/'
 
 
 

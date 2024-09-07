@@ -15,7 +15,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -29,7 +29,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -43,7 +43,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
             knownHelpersOnly: true
         }
     
@@ -58,7 +58,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
             helpers: {
                 someKnownHelper: () => 'some known helper'
             },
@@ -79,7 +79,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
             helpers: {
                 descriptionHelper
             }
@@ -96,7 +96,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
             helpers: {
                 list: function(items: Array<object>, options) {
                     const itemsAsHtml = items.map(item => "<li>" + options.fn(item) + "</li>");
@@ -117,7 +117,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
             partials: {
                 otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
@@ -134,7 +134,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
             partials: {
                 otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
@@ -149,9 +149,23 @@ const PREPARATIONS = [
     },
     
     async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+    
+        testTemplate(
+            '../src/partialDirs/with-root-relative-partial.hbs',
+            pluginOptions,
+            true,
+            null,
+        )
+    },
+    
+    async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -165,7 +179,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -179,7 +193,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -193,7 +207,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -207,7 +221,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(
@@ -221,7 +235,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../runtime'),
+            rootDir: path.join(__dirname, '../'),
         }
     
         testTemplate(

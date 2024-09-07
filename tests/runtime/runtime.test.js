@@ -111,6 +111,18 @@ describe('handlebars rutime', () => {
             }
         )
     })
+
+    it('should allow partials to find root relative', async () => {
+
+        await testTemplate(
+            '../src/partialDirs/with-root-relative-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const catchOutput = output.includes("<p>another: Description</p>")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
     
     it('should allow partials to find multiple paths', async () => {
         await testTemplate(

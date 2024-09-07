@@ -27614,7 +27614,7 @@ function extractModulesAndAssets(params) {
     return assets;
 }
 
-var ROOT_PATH_KEY = '_ROOT_/';
+var ROOT_PATH_KEY = '__ROOT__/';
 var StatementsProcessor = /** @class */ (function () {
     function StatementsProcessor(templateData, handlebarsPluginOptions) {
         if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
@@ -33865,7 +33865,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/simple.hbs', pluginOptions);
             return [2 /*return*/];
@@ -33875,7 +33875,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/invalid-syntax-error.hbs', pluginOptions);
             return [2 /*return*/];
@@ -33885,7 +33885,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
                 knownHelpersOnly: true
             };
             testTemplate('../src/invalid-unknown-helpers.hbs', pluginOptions);
@@ -33896,7 +33896,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
                 helpers: {
                     someKnownHelper: function () { return 'some known helper'; }
                 },
@@ -33913,7 +33913,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
                 helpers: {
                     descriptionHelper: descriptionHelper$1
                 }
@@ -33926,7 +33926,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
                 helpers: {
                     list: function (items, options) {
                         var itemsAsHtml = items.map(function (item) { return "<li>" + options.fn(item) + "</li>"; });
@@ -33942,7 +33942,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
                 partials: {
                     otherPartial: fs.readFileSync(path.join(__dirname$1, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
                 }
@@ -33955,7 +33955,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
                 partials: {
                     otherPartial: fs.readFileSync(path.join(__dirname$1, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
                 }
@@ -33968,7 +33968,17 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/partialDirs/with-root-relative-partial.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/with-dir-partials.hbs', pluginOptions);
             return [2 /*return*/];
@@ -33978,7 +33988,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/nested-templates/nested/with-ancestor-dir-partial.hbs', pluginOptions);
             return [2 /*return*/];
@@ -33988,7 +33998,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/nested-templates/with-parent-dir-partial.hbs', pluginOptions);
             return [2 /*return*/];
@@ -33998,7 +34008,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/nested-templates/with-cousin-dir-partial.hbs', pluginOptions);
             return [2 /*return*/];
@@ -34008,7 +34018,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/with-partial-block.hbs', pluginOptions);
             return [2 /*return*/];
@@ -34018,7 +34028,7 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../runtime'),
+                rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/with-inline-partial.hbs', pluginOptions);
             return [2 /*return*/];
