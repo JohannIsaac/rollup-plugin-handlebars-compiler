@@ -19343,7 +19343,7 @@ function extractModulesAndAssets(params) {
     return assets;
 }
 
-var ROOT_PARTIAL_KEY = '_ROOT_/';
+var ROOT_PATH_KEY = '_ROOT_/';
 var StatementsProcessor = /** @class */ (function () {
     function StatementsProcessor(templateData, handlebarsPluginOptions) {
         if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
@@ -19354,7 +19354,7 @@ var StatementsProcessor = /** @class */ (function () {
         this.assets = processResult.assets;
     }
     StatementsProcessor.renameAllRootPathPartials = function (source) {
-        return source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)\\/", 'gms'), "$1".concat(ROOT_PARTIAL_KEY));
+        return source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)\\/", 'gms'), "$1".concat(ROOT_PATH_KEY));
     };
     // Recursive function for getting nested partials with pathname
     StatementsProcessor.prototype.processStatements = function (templateData, partialsMap, helpersMap, assetsMap) {
@@ -19393,9 +19393,9 @@ var StatementsProcessor = /** @class */ (function () {
         return { partials: partials, helpers: helpers };
     };
     StatementsProcessor.prototype.getAllAssets = function (templateData) {
-        var partialIsRootRelative = templateData.name.startsWith(ROOT_PARTIAL_KEY);
+        var partialIsRootRelative = templateData.name.startsWith(ROOT_PATH_KEY);
         var rootDir = partialIsRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
-        var templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PARTIAL_KEY, '') : templateData.name;
+        var templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PATH_KEY, '') : templateData.name;
         var absoluteTemplatePath = path.join(rootDir, templateName);
         var resolvePath = this.handlebarsPluginOptions.assets.resolve;
         return extractModulesAndAssets({
@@ -19436,8 +19436,8 @@ var StatementsProcessor = /** @class */ (function () {
     };
     // Process a partial then recursively process further nested partials
     StatementsProcessor.prototype.processPartial = function (partialPath, templateData, partialsMap, helpersMap, assetsMap) {
-        var isRootPath = partialPath.startsWith(ROOT_PARTIAL_KEY);
-        var parsedPartialPath = isRootPath ? partialPath.replace(ROOT_PARTIAL_KEY, '/') : partialPath;
+        var isRootPath = partialPath.startsWith(ROOT_PATH_KEY);
+        var parsedPartialPath = isRootPath ? partialPath.replace(ROOT_PATH_KEY, '/') : partialPath;
         // Skip if partial does not exist
         var partialSource = this.resolvePartialSource(parsedPartialPath, templateData);
         if (!partialSource)
@@ -19467,14 +19467,14 @@ var StatementsProcessor = /** @class */ (function () {
     };
     // Process a partial then recursively process further nested partials
     StatementsProcessor.prototype.resolveHelper = function (helperPath, templateData) {
-        // Check if partial name is already registered in handlebarsPluginOptions
+        // Check if helper name is already registered in handlebarsPluginOptions
         if (this.handlebarsPluginOptions.helpers &&
             typeof this.handlebarsPluginOptions.helpers === 'object' &&
             this.handlebarsPluginOptions.helpers[helperPath]) {
             return false;
         }
-        var partialSource = this.checkIfHelperExists(helperPath, templateData);
-        return partialSource;
+        var helperSource = this.checkIfHelperExists(helperPath, templateData);
+        return helperSource;
     };
     StatementsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
         var isRootPath = partialPath.startsWith('/');
@@ -19502,15 +19502,15 @@ var StatementsProcessor = /** @class */ (function () {
         var extname = '.js';
         var helperFilepath = path.normalize("".concat(helperPath).concat(extname));
         var relativeFileDirectory = path.dirname(currentFilepath);
-        var relativePartialPath = path.join(relativeFileDirectory, helperFilepath);
-        var absoluteFilepath = path.resolve(rootFileDirectory, relativePartialPath);
+        var relativeHelperPath = path.join(relativeFileDirectory, helperFilepath);
+        var absoluteFilepath = path.resolve(rootFileDirectory, relativeHelperPath);
         var helperExists = false;
         try {
             helperExists = fs.existsSync(absoluteFilepath);
         }
         catch (e) {
             // const fileWithError = path.join(rootFileDirectory, currentFilepath)
-            // console.error(`\x1b[31mPartial \x1b[1m${partialAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
+            // console.error(`\x1b[31mHelper \x1b[1m${helperAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
             // console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
         }
         return helperExists;
@@ -19523,12 +19523,12 @@ var StatementsProcessor = /** @class */ (function () {
         var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
         return nestedPartialFilePath;
     };
-    StatementsProcessor.prototype.resolveHelperFilepath = function (partialPath, templateData) {
+    StatementsProcessor.prototype.resolveHelperFilepath = function (helperPath, templateData) {
         var extname = '.js';
         var fileDirectory = path.dirname(templateData.name);
-        var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
+        var helperFilepath = path.normalize("".concat(helperPath).concat(extname));
         // Process partials with paths nested to the current filepath
-        var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
+        var nestedPartialFilePath = path.join(fileDirectory, helperFilepath).replaceAll('\\', '/');
         return nestedPartialFilePath;
     };
     // Rewrite the original source to be passed to final source map
@@ -19539,11 +19539,11 @@ var StatementsProcessor = /** @class */ (function () {
         return source;
     };
     // Rewrite the original source to be passed to final source map
-    StatementsProcessor.prototype.renameHelperInstances = function (source, fromName, resolvedPartialPath) {
-        var extname = path.extname(resolvedPartialPath);
-        var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
-        resolvedPartialName = this.escapePathName(resolvedPartialName);
-        source = source.replaceAll(new RegExp("(\\{\\{(?:\\n|\\s)*)(\\[?)".concat(fromName, "(\\]?)(?=[\\r\\n\\s\\}])"), 'gms'), "$1$2".concat(resolvedPartialName, "$3"));
+    StatementsProcessor.prototype.renameHelperInstances = function (source, fromName, resolvedHelperPath) {
+        var extname = path.extname(resolvedHelperPath);
+        var resolvedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp("".concat(extname, "$")), '');
+        resolvedHelperName = this.escapePathName(resolvedHelperName);
+        source = source.replaceAll(new RegExp("(\\{\\{(?:\\n|\\s)*)(\\[?)".concat(fromName, "(\\]?)(?=[\\r\\n\\s\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
         return source;
     };
     // Rewrite the original source to be passed to final source map

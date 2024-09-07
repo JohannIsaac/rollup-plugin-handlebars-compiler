@@ -1,5 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+const filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(filename)
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index.js';
 import { removeOutputDir, testTemplate } from './helpers.js';
@@ -11,7 +14,9 @@ removeOutputDir()
 const PREPARATIONS = [
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/simple.hbs',
@@ -23,7 +28,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/invalid-syntax-error.hbs',
@@ -36,6 +43,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
             knownHelpersOnly: true
         }
     
@@ -50,6 +58,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
             helpers: {
                 someKnownHelper: () => 'some known helper'
             },
@@ -70,6 +79,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
             helpers: {
                 descriptionHelper
             }
@@ -86,6 +96,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
             helpers: {
                 list: function(items: Array<object>, options) {
                     const itemsAsHtml = items.map(item => "<li>" + options.fn(item) + "</li>");
@@ -106,6 +117,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
             partials: {
                 otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
@@ -122,6 +134,7 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
             partials: {
                 otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
@@ -137,7 +150,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/with-dir-partials.hbs',
@@ -149,7 +164,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
@@ -161,7 +178,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/nested-templates/with-parent-dir-partial.hbs',
@@ -173,7 +192,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/nested-templates/with-cousin-dir-partial.hbs',
@@ -185,7 +206,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/with-partial-block.hbs',
@@ -197,7 +220,9 @@ const PREPARATIONS = [
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {}
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../runtime'),
+        }
     
         testTemplate(
             '../src/with-inline-partial.hbs',

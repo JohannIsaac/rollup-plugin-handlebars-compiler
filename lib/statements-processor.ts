@@ -8,7 +8,7 @@ import { extractModulesAndAssets } from './template-parser/extractModulesAndAsse
 import { InputAsset } from './template-parser/InputData';
 import { sourceAttributesByTag } from './template-parser/utils';
 
-export const ROOT_PARTIAL_KEY = '_ROOT_/'
+export const ROOT_PATH_KEY = '_ROOT_/'
 
 
 
@@ -40,7 +40,7 @@ export default class StatementsProcessor {
     }
 
 	static renameAllRootPathPartials(source: string) {
-		return source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)\\/`, 'gms'), `$1${ROOT_PARTIAL_KEY}`)
+		return source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)\\/`, 'gms'), `$1${ROOT_PATH_KEY}`)
 	}
 
     static ImportScanner = class extends Handlebars.Visitor {
@@ -112,9 +112,9 @@ export default class StatementsProcessor {
 	}
 
 	private getAllAssets(templateData: TemplateData) {
-		const partialIsRootRelative = templateData.name.startsWith(ROOT_PARTIAL_KEY)
+		const partialIsRootRelative = templateData.name.startsWith(ROOT_PATH_KEY)
 		const rootDir = partialIsRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile)
-		const templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PARTIAL_KEY, '') : templateData.name
+		const templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PATH_KEY, '') : templateData.name
 		const absoluteTemplatePath = path.join(rootDir, templateName)
 		const resolvePath = this.handlebarsPluginOptions.assets.resolve
 		return extractModulesAndAssets({
@@ -163,8 +163,8 @@ export default class StatementsProcessor {
 	// Process a partial then recursively process further nested partials
 	private processPartial(partialPath: string, templateData: TemplateData, partialsMap: SourceDataMap, helpersMap: PathMap, assetsMap: AssetsMap) {
 
-		const isRootPath = partialPath.startsWith(ROOT_PARTIAL_KEY)
-		const parsedPartialPath = isRootPath ? partialPath.replace(ROOT_PARTIAL_KEY, '/') : partialPath
+		const isRootPath = partialPath.startsWith(ROOT_PATH_KEY)
+		const parsedPartialPath = isRootPath ? partialPath.replace(ROOT_PATH_KEY, '/') : partialPath
 		// Skip if partial does not exist
 		const partialSource = this.resolvePartialSource(parsedPartialPath, templateData)
 		if (!partialSource) return
@@ -205,15 +205,15 @@ export default class StatementsProcessor {
 	// Process a partial then recursively process further nested partials
 	private resolveHelper(helperPath: string, templateData: TemplateData): boolean {
 
-		// Check if partial name is already registered in handlebarsPluginOptions
+		// Check if helper name is already registered in handlebarsPluginOptions
 		if (this.handlebarsPluginOptions.helpers &&
 			typeof this.handlebarsPluginOptions.helpers === 'object' &&
 			this.handlebarsPluginOptions.helpers[helperPath]) {
 			return false
 		}
 
-		const partialSource = this.checkIfHelperExists(helperPath, templateData)
-		return partialSource
+		const helperSource = this.checkIfHelperExists(helperPath, templateData)
+		return helperSource
 	}
 
 	private getPartialSource(partialPath: string, templateData: TemplateData) {
@@ -246,14 +246,14 @@ export default class StatementsProcessor {
 		const helperFilepath = path.normalize(`${helperPath}${extname}`)
 
 		const relativeFileDirectory = path.dirname(currentFilepath)
-		const relativePartialPath = path.join(relativeFileDirectory, helperFilepath)
-		const absoluteFilepath = path.resolve(rootFileDirectory, relativePartialPath)
+		const relativeHelperPath = path.join(relativeFileDirectory, helperFilepath)
+		const absoluteFilepath = path.resolve(rootFileDirectory, relativeHelperPath)
 		let helperExists: boolean = false
 		try {
 			helperExists = fs.existsSync(absoluteFilepath);
 		} catch (e) {
 			// const fileWithError = path.join(rootFileDirectory, currentFilepath)
-			// console.error(`\x1b[31mPartial \x1b[1m${partialAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
+			// console.error(`\x1b[31mHelper \x1b[1m${helperAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
 			// console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
 		}
 		return helperExists
@@ -270,12 +270,12 @@ export default class StatementsProcessor {
 		return nestedPartialFilePath
 	}
 
-	private resolveHelperFilepath(partialPath: string, templateData: TemplateData) {
+	private resolveHelperFilepath(helperPath: string, templateData: TemplateData) {
 		const extname = '.js'
 		const fileDirectory = path.dirname(templateData.name)
-		const partialFilepath = path.normalize(`${partialPath}${extname}`)
+		const helperFilepath = path.normalize(`${helperPath}${extname}`)
 		// Process partials with paths nested to the current filepath
-		const nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/')
+		const nestedPartialFilePath = path.join(fileDirectory, helperFilepath).replaceAll('\\', '/')
 		return nestedPartialFilePath
 	}
 
@@ -288,11 +288,11 @@ export default class StatementsProcessor {
 	}
 
 	// Rewrite the original source to be passed to final source map
-	private renameHelperInstances(source: string, fromName: string, resolvedPartialPath: string): string {
-		const extname = path.extname(resolvedPartialPath)
-		let resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp(`${extname}$`), '')
-		resolvedPartialName = this.escapePathName(resolvedPartialName)
-		source = source.replaceAll(new RegExp(`(\\{\\{(?:\\n|\\s)*)(\\[?)${fromName}(\\]?)(?=[\\r\\n\\s\\}])`, 'gms'), `$1$2${resolvedPartialName}$3`)
+	private renameHelperInstances(source: string, fromName: string, resolvedHelperPath: string): string {
+		const extname = path.extname(resolvedHelperPath)
+		let resolvedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp(`${extname}$`), '')
+		resolvedHelperName = this.escapePathName(resolvedHelperName)
+		source = source.replaceAll(new RegExp(`(\\{\\{(?:\\n|\\s)*)(\\[?)${fromName}(\\]?)(?=[\\r\\n\\s\\}])`, 'gms'), `$1$2${resolvedHelperName}$3`)
 		return source
 	}
 
@@ -303,8 +303,8 @@ export default class StatementsProcessor {
 		const paths = assetData.assetTagData.paths
 		const tag = assetData.assetTagData.tagName
 		const attributes = sourceAttributesByTag[tag]
-		for (let path of paths) {
-			for (let attr of attributes) {
+		for (const path of paths) {
+			for (const attr of attributes) {
 				source = source.replaceAll(new RegExp(`\\b(${attr}="[^"]*?)(${path}\\b(,?))`, 'gms'), `$1${resolvedPath}$3`)
 			}
 		}

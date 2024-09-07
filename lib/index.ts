@@ -11,10 +11,7 @@ const defaultHandlebarsOptions = {
 	}
 }
 
-export default function handlebarsCompilerPlugin(handlebarsPluginOptions: HandlebarsPluginOptions = {}): Plugin {
-
-	let hbsTransformer: HandlebarsTransformer
-		
+export function getPluginOptions(handlebarsPluginOptions: HandlebarsPluginOptions = {}) {
 	if (!handlebarsPluginOptions || typeof handlebarsPluginOptions !== 'object') {
 		handlebarsPluginOptions = {}
 	}
@@ -29,6 +26,15 @@ export default function handlebarsCompilerPlugin(handlebarsPluginOptions: Handle
 	if (handlebarsPluginOptions.assets.emit) {
 		handlebarsPluginOptions.assets.resolve = true
 	}
+
+	return handlebarsPluginOptions
+}
+
+export default function handlebarsCompilerPlugin(handlebarsPluginOptions: HandlebarsPluginOptions = {}): Plugin {
+
+	let hbsTransformer: HandlebarsTransformer
+		
+	handlebarsPluginOptions = getPluginOptions(handlebarsPluginOptions)
 	
 	return {
 		name: 'handlebars-compiler',

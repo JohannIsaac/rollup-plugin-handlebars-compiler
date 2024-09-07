@@ -1,5 +1,5 @@
 import path from 'path';
-import StatementsProcessor, { ROOT_PARTIAL_KEY } from './statements-processor';
+import StatementsProcessor, { ROOT_PATH_KEY } from './statements-processor';
 import pluginOptions from './plugin-options';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';

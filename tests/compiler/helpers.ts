@@ -3,9 +3,11 @@ import path from 'path';
 
 import HandlebarsTransformer from '../../lib/handlebars-transformer';
 
-import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
-import { CompileResult } from '../../lib/types/handlebars';
+import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index';
+import { CompileResult } from '../../lib/types/handlebars/index';
 import { js_beautify } from 'js-beautify';
+
+import { getPluginOptions } from '../../lib/index'
 
 type TestFn = (err: Error, output: CompileResult) => {}
 
@@ -56,10 +58,11 @@ export function testTemplate(template: string, pluginOptions: HandlebarsPluginOp
         return
     }
 
-    const hbsTransformer = new HandlebarsTransformer(pluginOptions, source, templatePath)
+    const processedOptions = getPluginOptions(pluginOptions)
 
     let output: CompileResult | null = null
     try {
+        const hbsTransformer = new HandlebarsTransformer(processedOptions, source, templatePath)
         output = hbsTransformer.transform()
     } catch (e) {
         err = e

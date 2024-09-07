@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
+import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index';
 import { lookupHelperRegistration, lookupPartialRegistration } from './utils/utils';
 import { testTemplate } from './helpers';
 

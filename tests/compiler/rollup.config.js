@@ -17,7 +17,9 @@ export default {
     plugins: [
         typescript({
             declaration: false,
-            module: 'ES2020',
+            compilerOptions: {
+                module: "ES2020"
+            }
         }),
         nodeResolve(),
         commonJS(),
