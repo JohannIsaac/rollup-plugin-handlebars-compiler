@@ -8,6 +8,8 @@ import { extractModulesAndAssets } from './template-parser/extractModulesAndAsse
 import { InputAsset } from './template-parser/InputData';
 import { sourceAttributesByTag } from './template-parser/utils';
 
+export const ROOT_PARTIAL_KEY = '_ROOT_/'
+
 
 
 interface TemplateData {
@@ -36,6 +38,10 @@ export default class StatementsProcessor {
 		this.helpers = processResult.helpers
 		this.assets = processResult.assets
     }
+
+	static renameAllRootPathPartials(source: string) {
+		return source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)\\/`, 'gms'), `$1${ROOT_PARTIAL_KEY}`)
+	}
 
     static ImportScanner = class extends Handlebars.Visitor {
         partials: Set<string>;
@@ -73,6 +79,7 @@ export default class StatementsProcessor {
 	private processStatements(templateData: TemplateData, partialsMap: SourceDataMap = new Map(), helpersMap: PathMap = new Map(), assetsMap: AssetsMap = new Map()) {
 		
 		// If partials are detected, process each partial
+		templateData.source = StatementsProcessor.renameAllRootPathPartials(templateData.source)
 		const { partials, helpers } = this.getAllStatements(templateData.source)
 		const assets = this.getAllAssets(templateData)
 		if (assets) assets.forEach(assetData => this.processAsset(assetData, templateData, assetsMap))
@@ -105,15 +112,19 @@ export default class StatementsProcessor {
 	}
 
 	private getAllAssets(templateData: TemplateData) {
-		const absoluteTemplatePath = path.dirname(path.join(templateData.rootFile, templateData.name))
+		const partialIsRootRelative = templateData.name.startsWith(ROOT_PARTIAL_KEY)
+		const rootDir = partialIsRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile)
+		const templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PARTIAL_KEY, '') : templateData.name
+		const absoluteTemplatePath = path.join(rootDir, templateName)
 		const resolvePath = this.handlebarsPluginOptions.assets.resolve
 		return extractModulesAndAssets({
+			partialIsRootRelative,
 			resolvePath,
 			html: templateData.source,
 			htmlFilePath: absoluteTemplatePath,
-			partialPath: templateData.name,
+			partialPath: templateName,
 			rootDir: this.handlebarsPluginOptions.rootDir,
-			contextPath: this.handlebarsPluginOptions.contextPath
+			contextPath: this.handlebarsPluginOptions.assets.contextPath
 		})
 	}
 
@@ -151,12 +162,14 @@ export default class StatementsProcessor {
 	// Process a partial then recursively process further nested partials
 	private processPartial(partialPath: string, templateData: TemplateData, partialsMap: SourceDataMap, helpersMap: PathMap, assetsMap: AssetsMap) {
 
+		const isRootPath = partialPath.startsWith(ROOT_PARTIAL_KEY)
+		const parsedPartialPath = isRootPath ? partialPath.replace(ROOT_PARTIAL_KEY, '/') : partialPath
 		// Skip if partial does not exist
-		const partialSource = this.resolvePartialSource(partialPath, templateData)
+		const partialSource = this.resolvePartialSource(parsedPartialPath, templateData)
 		if (!partialSource) return
 
 		// Resolve the partial path relative to the root file
-		const resolvedPartialPath = this.resolvePartialFilepath(partialPath, templateData)
+		const resolvedPartialPath = isRootPath ? partialPath : this.resolvePartialFilepath(partialPath, templateData)
 		
 		// Rewrite the original source to be passed to final source map
 		templateData.source = this.renamePartialInstances(templateData.source, partialPath, resolvedPartialPath)
@@ -203,15 +216,16 @@ export default class StatementsProcessor {
 	}
 
 	private getPartialSource(partialPath: string, templateData: TemplateData) {
-		const rootFileDirectory = path.dirname(templateData.rootFile)
+		const isRootPath = partialPath.startsWith('/')
+		const rootFileDirectory = isRootPath ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile)
 		const currentFilepath = templateData.name
 		const extname = path.extname(currentFilepath)
 
-		const partialFilepath = path.normalize(`${partialPath}${extname}`)
-
 		const relativeFileDirectory = path.dirname(currentFilepath)
-		const relativePartialPath = path.join(relativeFileDirectory, partialFilepath)
-		const partialAbsolutePath = path.resolve(rootFileDirectory, relativePartialPath)
+		const relativePartialPath = isRootPath ? partialPath.replace(/^\//, '') : path.join(relativeFileDirectory, partialPath)
+		const fullRelativePartialPath = path.normalize(`${relativePartialPath}${extname}`)
+
+		const partialAbsolutePath = path.resolve(rootFileDirectory, fullRelativePartialPath)
 		let partialSource: string | undefined
 		try {
 			partialSource = fs.readFileSync(partialAbsolutePath, 'utf-8');

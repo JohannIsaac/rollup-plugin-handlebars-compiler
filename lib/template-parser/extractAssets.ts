@@ -12,6 +12,7 @@ import {
 import { InputAsset } from './InputData';
 
 export interface ExtractAssetsParams {
+  partialIsRootRelative?: boolean;
   resolvePath?: boolean;
   document: Document;
   htmlFilePath: string;
@@ -43,6 +44,7 @@ export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
       if (params.resolvePath) {
         outputFilePath = resolveOutputPathFromRoot(
           sourcePath,
+          params.partialIsRootRelative,
           params.htmlDir,
           params.partialDir,
           params.rootDir,

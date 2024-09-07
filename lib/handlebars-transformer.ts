@@ -1,5 +1,5 @@
 import path from 'path';
-import StatementsProcessor from './statements-processor';
+import StatementsProcessor, { ROOT_PARTIAL_KEY } from './statements-processor';
 import pluginOptions from './plugin-options';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
@@ -21,7 +21,7 @@ export default class HandlebarsTransformer {
         this.handlebarsPluginOptions = handlebarsPluginOptions
         this.cache = new Map();
         this.files = [];
-		this.source = source
+		this.source = StatementsProcessor.renameAllRootPathPartials(source)
 		this.file = file
 		this.statementsProcessor = this.getStatementsProcessor()
     }

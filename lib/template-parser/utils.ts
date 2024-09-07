@@ -97,6 +97,7 @@ export function resolveAssetFilePath(
 		absolutePathPrefix && browserPath[0] === '/'
 			? '/' + path.posix.relative(absolutePathPrefix, browserPath)
 			: browserPath;
+	// const fileDir = partialIsRootRelative ? path.relative(projectRootDir, htmlDir)
 	return path.join(
 		_browserPath.startsWith('/') ? projectRootDir : htmlDir,
 		_browserPath.split('/').join(path.sep),
@@ -105,12 +106,14 @@ export function resolveAssetFilePath(
 
 export function resolveOutputPathFromRoot(
 	browserPath: string,
+	partialIsRootRelative: boolean,
 	htmlDir: string,
 	partialDir: string,
 	projectRootDir: string,
 	contextPath?: string
 ) {
-	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, path.join(htmlDir, partialDir, browserPath)).replaceAll('\\', '/')
+	const absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath)
+	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/')
 	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
 	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), '/') : _browserPath
 	return _resolvedPathFromRoot

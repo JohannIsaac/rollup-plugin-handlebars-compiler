@@ -25,10 +25,10 @@ interface IPluginOptions {
     partials?: Partials;
     templateData?: TemplateData;
     rootDir?: string;
-    contextPath?: string;
     assets?: {
         resolve?: boolean | null;
         emit?: boolean | null;
+        contextPath?: string;
     };
 }
 
