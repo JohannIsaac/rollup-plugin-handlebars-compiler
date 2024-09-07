@@ -163,6 +163,42 @@ describe('Handlebars Compiler', () => {
         )
     })
 
+    it('should allow nested partials to find root relative', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/partialDirs/with-nested-root-relative-partial.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput = lookupPartialRegistration('__ROOT__/src/partialDirs/anotherDir/otherPartial', output?.code)
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow relative path partial to nest root relative partials', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput1 = lookupPartialRegistration('__ROOT__/src/partialDirs/anotherDir/referenceAncestor', output?.code)
+                const catchOutput2 = lookupPartialRegistration('__ROOT__/src/partialDirs/otherPartial', output?.code)
+                expect(catchOutput1).toBe(true)
+                expect(catchOutput2).toBe(true)
+            }
+        )
+    })
+
     it('should allow partials to find multiple paths', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {

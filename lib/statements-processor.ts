@@ -175,9 +175,11 @@ export default class StatementsProcessor {
 		// Rewrite the original source to be passed to final source map
 		templateData.source = this.renamePartialInstances(templateData.source, partialPath, resolvedPartialPath)
 
+		const extname = path.extname(templateData.name)
+		const partialTemplateName = resolvedPartialPath.replace(new RegExp(`\\.\\w+$`), '') + extname
 		// Get the nested partials
 		const partialTemplateData: TemplateData = {
-			name: resolvedPartialPath,
+			name: partialTemplateName,
 			source: partialSource,
 			rootFile: templateData.rootFile
 		}
@@ -219,11 +221,17 @@ export default class StatementsProcessor {
 	private getPartialSource(partialPath: string, templateData: TemplateData) {
 		const isRootPath = partialPath.startsWith('/')
 		const rootFileDirectory = isRootPath ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile)
-		const currentFilepath = templateData.name
+
+		const templatePath = templateData.name
+		const templatePathIsRootRelative = templatePath.startsWith(ROOT_PATH_KEY)
+		const currentFilepath = templatePathIsRootRelative ?
+								path.join(this.handlebarsPluginOptions.rootDir, templatePath.replace(ROOT_PATH_KEY, '')) :
+								templatePath
+
 		const extname = path.extname(currentFilepath)
 
 		const relativeFileDirectory = path.dirname(currentFilepath)
-		const relativePartialPath = isRootPath ? partialPath.replace(/^\//, '') : path.join(relativeFileDirectory, partialPath)
+		const relativePartialPath = isRootPath ? partialPath.replace('/', '') : path.join(relativeFileDirectory, partialPath)
 		const fullRelativePartialPath = path.normalize(`${relativePartialPath}${extname}`)
 
 		const partialAbsolutePath = path.resolve(rootFileDirectory, fullRelativePartialPath)

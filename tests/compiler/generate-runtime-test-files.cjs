@@ -27717,9 +27717,11 @@ var StatementsProcessor = /** @class */ (function () {
         var resolvedPartialPath = isRootPath ? partialPath : this.resolvePartialFilepath(partialPath, templateData);
         // Rewrite the original source to be passed to final source map
         templateData.source = this.renamePartialInstances(templateData.source, partialPath, resolvedPartialPath);
+        var extname = path.extname(templateData.name);
+        var partialTemplateName = resolvedPartialPath.replace(new RegExp("\\.\\w+$"), '') + extname;
         // Get the nested partials
         var partialTemplateData = {
-            name: resolvedPartialPath,
+            name: partialTemplateName,
             source: partialSource,
             rootFile: templateData.rootFile
         };
@@ -27750,10 +27752,14 @@ var StatementsProcessor = /** @class */ (function () {
     StatementsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
         var isRootPath = partialPath.startsWith('/');
         var rootFileDirectory = isRootPath ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
-        var currentFilepath = templateData.name;
+        var templatePath = templateData.name;
+        var templatePathIsRootRelative = templatePath.startsWith(ROOT_PATH_KEY);
+        var currentFilepath = templatePathIsRootRelative ?
+            path.join(this.handlebarsPluginOptions.rootDir, templatePath.replace(ROOT_PATH_KEY, '')) :
+            templatePath;
         var extname = path.extname(currentFilepath);
         var relativeFileDirectory = path.dirname(currentFilepath);
-        var relativePartialPath = isRootPath ? partialPath.replace(/^\//, '') : path.join(relativeFileDirectory, partialPath);
+        var relativePartialPath = isRootPath ? partialPath.replace('/', '') : path.join(relativeFileDirectory, partialPath);
         var fullRelativePartialPath = path.normalize("".concat(relativePartialPath).concat(extname));
         var partialAbsolutePath = path.resolve(rootFileDirectory, fullRelativePartialPath);
         var partialSource;
@@ -33971,6 +33977,26 @@ var PREPARATIONS = [
                 rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/partialDirs/with-root-relative-partial.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/partialDirs/with-nested-root-relative-partial.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs', pluginOptions);
             return [2 /*return*/];
         });
     }); },

@@ -163,6 +163,34 @@ const PREPARATIONS = [
     },
     
     async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+    
+        testTemplate(
+            '../src/partialDirs/with-nested-root-relative-partial.hbs',
+            pluginOptions,
+            true,
+            null,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+    
+        testTemplate(
+            '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
+            pluginOptions,
+            true,
+            null,
+        )
+    },
+    
+    async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
             rootDir: path.join(__dirname, '../'),

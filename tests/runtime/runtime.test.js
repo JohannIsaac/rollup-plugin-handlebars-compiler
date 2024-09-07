@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { removeTestResultsDir, testTemplate } from './utils';
+import { testTemplate } from './utils';
 
 const TEST_TEMPLATE_DATA = {
     title: "Title",
@@ -10,8 +10,6 @@ const TEST_TEMPLATE_DATA = {
     image: "http://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
     object: { a: "a", b: "b", c: "c" },
 }
-
-// removeTestResultsDir()
 
 describe('handlebars rutime', () => {
 
@@ -96,6 +94,7 @@ describe('handlebars rutime', () => {
                 const catchOutput4 = output.includes('<li>Alan Johnson</li>')
                 const catchOutput5 = output.includes('</ul>')
                 const result = catchOutput1 && catchOutput2 && catchOutput3 && catchOutput4 && catchOutput5
+                console.log(result)
                 expect(result).toBe(true)
             }
         )
@@ -119,6 +118,32 @@ describe('handlebars rutime', () => {
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 const catchOutput = output.includes("<p>another: Description</p>")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow nested partials to find root relative', async () => {
+
+        await testTemplate(
+            '../src/partialDirs/with-nested-root-relative-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const catchOutput = output.includes("<p>another: Description</p>")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow relative path partial to nest root relative partials', async () => {
+
+        await testTemplate(
+            '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                console.error(err)
+                console.log(output)
+                const catchOutput = output.includes("<p>Other: Description</p>")
                 expect(catchOutput).toBe(true)
             }
         )
