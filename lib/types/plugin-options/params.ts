@@ -12,4 +12,8 @@ export interface IPluginOptions {
     helpers?: Helpers;
     partials?: Partials;
 	templateData?: TemplateData;
+    rootDir?: string;
+    emitAssets?: boolean | null;
+    resolveAssets?: boolean | null;
+    resolveAssetsRootDir?: string
 }

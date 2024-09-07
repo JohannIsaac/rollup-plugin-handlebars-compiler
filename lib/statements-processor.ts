@@ -3,7 +3,10 @@ import fs from 'fs';
 import Handlebars from 'handlebars';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
-import type { PathMap, SourceDataMap } from './types/source-map';
+import type { AssetsMap, PathMap, SourceDataMap } from './types/source-map';
+import { extractModulesAndAssets } from './template-parser/extractModulesAndAssets';
+import { InputAsset } from './template-parser/InputData';
+import { sourceAttributesByTag } from './template-parser/utils';
 
 
 
@@ -15,13 +18,15 @@ interface TemplateData {
 
 type ProcessResult = {
 	partials: SourceDataMap,
-	helpers: PathMap
+	helpers: PathMap,
+	assets: AssetsMap
 }
 
 export default class StatementsProcessor {
     handlebarsPluginOptions: HandlebarsPluginOptions
 	partials: SourceDataMap
 	helpers: PathMap
+	assets: AssetsMap
 
     constructor(templateData: TemplateData, handlebarsPluginOptions: HandlebarsPluginOptions = {}) {
         this.handlebarsPluginOptions = handlebarsPluginOptions
@@ -29,6 +34,7 @@ export default class StatementsProcessor {
 		const processResult = this.processStatements(templateData)
 		this.partials = processResult.partials
 		this.helpers = processResult.helpers
+		this.assets = processResult.assets
     }
 
     static ImportScanner = class extends Handlebars.Visitor {
@@ -64,12 +70,14 @@ export default class StatementsProcessor {
 
 
 	// Recursive function for getting nested partials with pathname
-	private processStatements(templateData: TemplateData, partialsMap: SourceDataMap = new Map(), helpersMap: PathMap = new Map()) {
+	private processStatements(templateData: TemplateData, partialsMap: SourceDataMap = new Map(), helpersMap: PathMap = new Map(), assetsMap: AssetsMap = new Map()) {
 		
 		// If partials are detected, process each partial
 		const { partials, helpers } = this.getAllStatements(templateData.source)
+		const assets = this.getAllAssets(templateData)
+		if (assets) assets.forEach(assetData => this.processAsset(assetData, templateData, assetsMap))
 		if (helpers) helpers.forEach(helperPath => this.processHelper(helperPath, templateData, helpersMap))
-		if (partials) partials.forEach(partialPath => this.processPartial(partialPath, templateData, partialsMap, helpersMap))
+		if (partials) partials.forEach(partialPath => this.processPartial(partialPath, templateData, partialsMap, helpersMap, assetsMap))
 		
 		// Add current template to source-map with re-written templateData.source
 		// processPartial resolves partial instance paths for the templateData.source
@@ -79,7 +87,8 @@ export default class StatementsProcessor {
 
 		const processResult: ProcessResult = {
 			partials: partialsMap,
-			helpers: helpersMap
+			helpers: helpersMap,
+			assets: assetsMap
 		}
 
 		return processResult;
@@ -95,8 +104,28 @@ export default class StatementsProcessor {
 		return { partials, helpers};
 	}
 
+	private getAllAssets(templateData: TemplateData) {
+		if (!this.handlebarsPluginOptions.resolveAssets) return
+		const absoluteTempaltePath = path.dirname(path.join(templateData.rootFile, templateData.name))
+		return extractModulesAndAssets({
+			html: templateData.source,
+			htmlFilePath: absoluteTempaltePath,
+			partialPath: templateData.name,
+			rootDir: this.handlebarsPluginOptions.rootDir,
+			resolveRootDir: this.handlebarsPluginOptions.resolveAssetsRootDir
+		})
+	}
+
 	// Process a partial then recursively process further nested partials
-	private processHelper(helperPath: string, templateData: TemplateData, helpersMap: PathMap): string {
+	private processAsset(assetData: InputAsset, templateData: TemplateData, assetsMap: AssetsMap) {
+		templateData.source = this.renameAssetSources(templateData.source, assetData)
+		const newAssetData = Object.assign({}, assetData)
+		delete newAssetData.assetTagData
+		assetsMap.set(assetData.filePath, newAssetData)
+	}
+
+	// Process a partial then recursively process further nested partials
+	private processHelper(helperPath: string, templateData: TemplateData, helpersMap: PathMap) {
 
 		// Skip if helper does not exist
 		const helperResolved = this.resolveHelper(helperPath, templateData)
@@ -119,7 +148,7 @@ export default class StatementsProcessor {
 	}
 
 	// Process a partial then recursively process further nested partials
-	private processPartial(partialPath: string, templateData: TemplateData, partialsMap: SourceDataMap, helpersMap: PathMap): string {
+	private processPartial(partialPath: string, templateData: TemplateData, partialsMap: SourceDataMap, helpersMap: PathMap, assetsMap: AssetsMap) {
 
 		// Skip if partial does not exist
 		const partialSource = this.resolvePartialSource(partialPath, templateData)
@@ -137,7 +166,7 @@ export default class StatementsProcessor {
 			source: partialSource,
 			rootFile: templateData.rootFile
 		}
-		this.processStatements(partialTemplateData, partialsMap, helpersMap);
+		this.processStatements(partialTemplateData, partialsMap, helpersMap, assetsMap);
 	}
 
 
@@ -238,7 +267,7 @@ export default class StatementsProcessor {
 	private renamePartialInstances(source: string, fromName: string, resolvedPartialPath: string): string {
 		const extname = path.extname(resolvedPartialPath)
 		const resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp(`${extname}$`), '')
-		source = source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)(${fromName})(?=[\\r\\n\\s\\}])`, 'g'), `$1${resolvedPartialName}`)
+		source = source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)(${fromName})(?=[\\r\\n\\s\\}])`, 'gms'), `$1${resolvedPartialName}`)
 		return source
 	}
 
@@ -247,7 +276,22 @@ export default class StatementsProcessor {
 		const extname = path.extname(resolvedPartialPath)
 		let resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp(`${extname}$`), '')
 		resolvedPartialName = this.escapePathName(resolvedPartialName)
-		source = source.replaceAll(new RegExp(`(\\{\\{(?:\\n|\\s)*)(\\[?)${fromName}(\\]?)(?=[\\r\\n\\s\\}])`, 'g'), `$1$2${resolvedPartialName}$3`)
+		source = source.replaceAll(new RegExp(`(\\{\\{(?:\\n|\\s)*)(\\[?)${fromName}(\\]?)(?=[\\r\\n\\s\\}])`, 'gms'), `$1$2${resolvedPartialName}$3`)
+		return source
+	}
+
+	// Rewrite the original source to be passed to final source map
+	private renameAssetSources(source: string, assetData: InputAsset) {
+		if (!assetData || !assetData.assetTagData) return source
+		const resolvedPath = assetData.outputFilePath
+		const paths = assetData.assetTagData.paths
+		const tag = assetData.assetTagData.tagName
+		const attributes = sourceAttributesByTag[tag]
+		for (let path of paths) {
+			for (let attr of attributes) {
+				source = source.replaceAll(new RegExp(`\\b(${attr}="[^"]*?)(${path}\\b(,?))`, 'gms'), `$1${resolvedPath}$3`)
+			}
+		}
 		return source
 	}
 
