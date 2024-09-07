@@ -1,6 +1,5 @@
 import { serialize } from 'parse5';
 import fs from 'fs';
-import path from 'path';
 import { Document } from 'parse5/dist/tree-adapters/default.js';
 import {
   findAssets,
@@ -8,11 +7,12 @@ import {
   isHashedAsset,
   resolveAssetFilePath,
   createAssetPicomatchMatcher,
-  resolveOutputPath,
+  resolveOutputPathFromRoot,
 } from './utils';
 import { InputAsset } from './InputData';
 
 export interface ExtractAssetsParams {
+  resolvePath?: boolean;
   document: Document;
   htmlFilePath: string;
   htmlDir: string;
@@ -20,7 +20,7 @@ export interface ExtractAssetsParams {
   rootDir: string;
   externalAssets?: string | string[];
   absolutePathPrefix?: string;
-  resolveRootDir?: string;
+  contextPath?: string;
 }
 
 export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
@@ -39,13 +39,18 @@ export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
         params.rootDir,
         params.absolutePathPrefix,
       );
-      const outputFilePath = resolveOutputPath(
-        sourcePath,
-        params.htmlDir,
-        params.partialDir,
-        params.rootDir,
-        params.resolveRootDir
-      )
+      let outputFilePath: string
+      if (params.resolvePath) {
+        outputFilePath = resolveOutputPathFromRoot(
+          sourcePath,
+          params.htmlDir,
+          params.partialDir,
+          params.rootDir,
+          params.contextPath
+        )
+      } else {
+        outputFilePath = sourcePath
+      }
       const hashed = isHashedAsset(node);
       const alreadyHandled = allAssets.find(a => a.filePath === filePath && a.hashed === hashed);
       if (!alreadyHandled) {

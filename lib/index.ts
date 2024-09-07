@@ -3,27 +3,31 @@ import HandlebarsTransformer from './handlebars-transformer';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
 
+const defaultHandlebarsOptions = {
+	rootDir: process.cwd(),
+	assets: {
+		emit: true,
+		resovle: true
+	}
+}
+
 export default function handlebarsCompilerPlugin(handlebarsPluginOptions: HandlebarsPluginOptions = {}): Plugin {
 
 	let hbsTransformer: HandlebarsTransformer
 		
-	if (!handlebarsPluginOptions) {
+	if (!handlebarsPluginOptions || typeof handlebarsPluginOptions !== 'object') {
 		handlebarsPluginOptions = {}
 	}
 
-	// rootDir defaults to process current working directory
-	if (!handlebarsPluginOptions.rootDir) {
-		handlebarsPluginOptions.rootDir = process.cwd()
+	handlebarsPluginOptions = Object.assign({}, defaultHandlebarsOptions, handlebarsPluginOptions)
+		
+	if (!handlebarsPluginOptions.assets || typeof handlebarsPluginOptions.assets !== 'object') {
+		handlebarsPluginOptions.assets = {}
 	}
 
-	// If emitAssets is not set, default to true
-	if (typeof handlebarsPluginOptions.emitAssets !== 'boolean' && handlebarsPluginOptions.emitAssets !== null) {
-		handlebarsPluginOptions.emitAssets = true
-	}
-
-	// Always resolve assets if emitAssets is set to true
-	if (handlebarsPluginOptions.emitAssets) {
-		handlebarsPluginOptions.resolveAssets = true
+	// Always resolve assets if assets.emit is set to true
+	if (handlebarsPluginOptions.assets.emit) {
+		handlebarsPluginOptions.assets.resolve = true
 	}
 	
 	return {
@@ -45,7 +49,7 @@ export default function handlebarsCompilerPlugin(handlebarsPluginOptions: Handle
 		},
 
 		renderStart() {
-			if (!handlebarsPluginOptions.emitAssets || !hbsTransformer) return
+			if (!handlebarsPluginOptions.assets.emit || !hbsTransformer) return
 			const assetsMap = hbsTransformer.getAssetsMap()
 			Array.from(assetsMap).forEach(([absoluteFilepath, assetData]) => {
 				const outputFilepath = assetData.outputFilePath.replace(/^\//, '')

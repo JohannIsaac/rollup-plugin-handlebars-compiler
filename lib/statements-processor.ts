@@ -105,14 +105,15 @@ export default class StatementsProcessor {
 	}
 
 	private getAllAssets(templateData: TemplateData) {
-		if (!this.handlebarsPluginOptions.resolveAssets) return
-		const absoluteTempaltePath = path.dirname(path.join(templateData.rootFile, templateData.name))
+		const absoluteTemplatePath = path.dirname(path.join(templateData.rootFile, templateData.name))
+		const resolvePath = this.handlebarsPluginOptions.assets.resolve
 		return extractModulesAndAssets({
+			resolvePath,
 			html: templateData.source,
-			htmlFilePath: absoluteTempaltePath,
+			htmlFilePath: absoluteTemplatePath,
 			partialPath: templateData.name,
 			rootDir: this.handlebarsPluginOptions.rootDir,
-			resolveRootDir: this.handlebarsPluginOptions.resolveAssetsRootDir
+			contextPath: this.handlebarsPluginOptions.contextPath
 		})
 	}
 

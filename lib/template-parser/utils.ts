@@ -103,16 +103,16 @@ export function resolveAssetFilePath(
 	);
 }
 
-export function resolveOutputPath(
+export function resolveOutputPathFromRoot(
 	browserPath: string,
 	htmlDir: string,
 	partialDir: string,
 	projectRootDir: string,
-	resolveRootDir?: string
+	contextPath?: string
 ) {
 	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, path.join(htmlDir, partialDir, browserPath)).replaceAll('\\', '/')
-	const strippedRootDir = resolveRootDir && path.normalize(resolveRootDir.replace(/\/$/, '')).replaceAll('\\', '/')
-	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}`), '') : _browserPath
+	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
+	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), '/') : _browserPath
 	return _resolvedPathFromRoot
 }
 

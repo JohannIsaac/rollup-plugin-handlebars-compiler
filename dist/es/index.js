@@ -19200,10 +19200,10 @@ function resolveAssetFilePath(browserPath, htmlDir, projectRootDir, absolutePath
         : browserPath;
     return path.join(_browserPath.startsWith('/') ? projectRootDir : htmlDir, _browserPath.split('/').join(path.sep));
 }
-function resolveOutputPath(browserPath, htmlDir, partialDir, projectRootDir, resolveRootDir) {
+function resolveOutputPathFromRoot(browserPath, htmlDir, partialDir, projectRootDir, contextPath) {
     var _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, path.join(htmlDir, partialDir, browserPath)).replaceAll('\\', '/');
-    var strippedRootDir = resolveRootDir && path.normalize(resolveRootDir.replace(/\/$/, '')).replaceAll('\\', '/');
-    var _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp("^/".concat(strippedRootDir)), '') : _browserPath;
+    var strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/');
+    var _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp("^/".concat(strippedRootDir, "/")), '/') : _browserPath;
     return _resolvedPathFromRoot;
 }
 function getSourceAttribute(node) {
@@ -19271,7 +19271,13 @@ function extractAssets(params) {
                 if (isExternal(sourcePath))
                     return "continue";
                 var filePath = resolveAssetFilePath(sourcePath, params.htmlDir, params.rootDir, params.absolutePathPrefix);
-                var outputFilePath = resolveOutputPath(sourcePath, params.htmlDir, params.partialDir, params.rootDir, params.resolveRootDir);
+                var outputFilePath = void 0;
+                if (params.resolvePath) {
+                    outputFilePath = resolveOutputPathFromRoot(sourcePath, params.htmlDir, params.partialDir, params.rootDir, params.contextPath);
+                }
+                else {
+                    outputFilePath = sourcePath;
+                }
                 var hashed = isHashedAsset(node);
                 var alreadyHandled = allAssets.find(function (a) { return a.filePath === filePath && a.hashed === hashed; });
                 if (!alreadyHandled) {
@@ -19312,12 +19318,13 @@ function extractAssets(params) {
 }
 
 function extractModulesAndAssets(params) {
-    var html = params.html, htmlFilePath = params.htmlFilePath, partialPath = params.partialPath, rootDir = params.rootDir, externalAssets = params.externalAssets, absolutePathPrefix = params.absolutePathPrefix, resolveRootDir = params.resolveRootDir;
+    var resolvePath = params.resolvePath, html = params.html, htmlFilePath = params.htmlFilePath, partialPath = params.partialPath, rootDir = params.rootDir, externalAssets = params.externalAssets, absolutePathPrefix = params.absolutePathPrefix, contextPath = params.contextPath;
     var htmlDir = path.dirname(htmlFilePath);
     var partialDir = path.dirname(partialPath);
     var document = parse$3(html);
     // extract functions mutate the AST
     var assets = extractAssets({
+        resolvePath: resolvePath,
         document: document,
         htmlDir: htmlDir,
         partialDir: partialDir,
@@ -19325,7 +19332,7 @@ function extractModulesAndAssets(params) {
         rootDir: rootDir,
         externalAssets: externalAssets,
         absolutePathPrefix: absolutePathPrefix,
-        resolveRootDir: resolveRootDir
+        contextPath: contextPath
     });
     return assets;
 }
@@ -19375,15 +19382,15 @@ var StatementsProcessor = /** @class */ (function () {
         return { partials: partials, helpers: helpers };
     };
     StatementsProcessor.prototype.getAllAssets = function (templateData) {
-        if (!this.handlebarsPluginOptions.resolveAssets)
-            return;
-        var absoluteTempaltePath = path.dirname(path.join(templateData.rootFile, templateData.name));
+        var absoluteTemplatePath = path.dirname(path.join(templateData.rootFile, templateData.name));
+        var resolvePath = this.handlebarsPluginOptions.assets.resolve;
         return extractModulesAndAssets({
+            resolvePath: resolvePath,
             html: templateData.source,
-            htmlFilePath: absoluteTempaltePath,
+            htmlFilePath: absoluteTemplatePath,
             partialPath: templateData.name,
             rootDir: this.handlebarsPluginOptions.rootDir,
-            resolveRootDir: this.handlebarsPluginOptions.resolveAssetsRootDir
+            contextPath: this.handlebarsPluginOptions.contextPath
         });
     };
     // Process a partial then recursively process further nested partials
@@ -25483,23 +25490,26 @@ var HandlebarsTransformer = /** @class */ (function () {
     return HandlebarsTransformer;
 }());
 
+var defaultHandlebarsOptions = {
+    rootDir: process.cwd(),
+    assets: {
+        emit: true,
+        resovle: true
+    }
+};
 function handlebarsCompilerPlugin(handlebarsPluginOptions) {
     if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
     var hbsTransformer;
-    if (!handlebarsPluginOptions) {
+    if (!handlebarsPluginOptions || typeof handlebarsPluginOptions !== 'object') {
         handlebarsPluginOptions = {};
     }
-    // rootDir defaults to process current working directory
-    if (!handlebarsPluginOptions.rootDir) {
-        handlebarsPluginOptions.rootDir = process.cwd();
+    handlebarsPluginOptions = Object.assign({}, defaultHandlebarsOptions, handlebarsPluginOptions);
+    if (!handlebarsPluginOptions.assets || typeof handlebarsPluginOptions.assets !== 'object') {
+        handlebarsPluginOptions.assets = {};
     }
-    // If emitAssets is not set, default to true
-    if (typeof handlebarsPluginOptions.emitAssets !== 'boolean' && handlebarsPluginOptions.emitAssets !== null) {
-        handlebarsPluginOptions.emitAssets = true;
-    }
-    // Always resolve assets if emitAssets is set to true
-    if (handlebarsPluginOptions.emitAssets) {
-        handlebarsPluginOptions.resolveAssets = true;
+    // Always resolve assets if assets.emit is set to true
+    if (handlebarsPluginOptions.assets.emit) {
+        handlebarsPluginOptions.assets.resolve = true;
     }
     return {
         name: 'handlebars-compiler',
@@ -25519,7 +25529,7 @@ function handlebarsCompilerPlugin(handlebarsPluginOptions) {
         },
         renderStart: function () {
             var _this = this;
-            if (!handlebarsPluginOptions.emitAssets || !hbsTransformer)
+            if (!handlebarsPluginOptions.assets.emit || !hbsTransformer)
                 return;
             var assetsMap = hbsTransformer.getAssetsMap();
             Array.from(assetsMap).forEach(function (_a) {

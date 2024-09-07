@@ -25,9 +25,11 @@ interface IPluginOptions {
     partials?: Partials;
     templateData?: TemplateData;
     rootDir?: string;
-    emitAssets?: boolean | null;
-    resolveAssets?: boolean | null;
-    resolveAssetsRootDir?: string;
+    contextPath?: string;
+    assets?: {
+        resolve?: boolean | null;
+        emit?: boolean | null;
+    };
 }
 
 interface HandlebarsPluginOptions extends CompileOptions, IPluginOptions {
