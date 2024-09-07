@@ -110,12 +110,15 @@ export function resolveOutputPathFromRoot(
 	htmlDir: string,
 	partialDir: string,
 	projectRootDir: string,
-	contextPath?: string
+	contextPath?: string,
+	outputDir?: string
 ) {
 	const absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath)
 	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/')
 	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
-	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), '/') : _browserPath
+	const strippedOutputDir = outputDir && path.normalize(outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
+	const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
+	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
 	return _resolvedPathFromRoot
 }
 

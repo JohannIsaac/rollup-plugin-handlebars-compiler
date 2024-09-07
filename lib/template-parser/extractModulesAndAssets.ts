@@ -12,10 +12,23 @@ export interface ExtractParams {
   externalAssets?: string | string[];
   absolutePathPrefix?: string;
   contextPath?: string;
+  outputDir?: string
 }
 
 export function extractModulesAndAssets(params: ExtractParams) {
-  const { partialIsRootRelative, resolvePath, html, htmlFilePath, partialPath, rootDir, externalAssets, absolutePathPrefix, contextPath } = params;
+  const {
+    partialIsRootRelative,
+    resolvePath,
+    html,
+    htmlFilePath,
+    partialPath,
+    rootDir,
+    externalAssets,
+    absolutePathPrefix,
+    contextPath,
+    outputDir
+  } = params;
+  
   const htmlDir = path.dirname(htmlFilePath);
   const partialDir = path.dirname(partialPath);
   const document = parse(html);
@@ -31,7 +44,8 @@ export function extractModulesAndAssets(params: ExtractParams) {
     rootDir,
     externalAssets,
     absolutePathPrefix,
-    contextPath
+    contextPath,
+    outputDir
   })
 
   return assets;

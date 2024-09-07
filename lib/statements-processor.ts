@@ -124,7 +124,8 @@ export default class StatementsProcessor {
 			htmlFilePath: absoluteTemplatePath,
 			partialPath: templateName,
 			rootDir: this.handlebarsPluginOptions.rootDir,
-			contextPath: this.handlebarsPluginOptions.assets.contextPath
+			contextPath: this.handlebarsPluginOptions.assets.contextPath,
+			outputDir: this.handlebarsPluginOptions.assets.outputDir
 		})
 	}
 

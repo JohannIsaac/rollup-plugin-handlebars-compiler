@@ -22,6 +22,7 @@ export interface ExtractAssetsParams {
   externalAssets?: string | string[];
   absolutePathPrefix?: string;
   contextPath?: string;
+  outputDir?: string
 }
 
 export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
@@ -48,7 +49,8 @@ export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
           params.htmlDir,
           params.partialDir,
           params.rootDir,
-          params.contextPath
+          params.contextPath,
+          params.outputDir
         )
       } else {
         outputFilePath = sourcePath
