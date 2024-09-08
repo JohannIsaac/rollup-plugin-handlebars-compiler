@@ -27626,13 +27626,14 @@ var AssetsExtractor = /** @class */ (function () {
             path.join(this.handlebarsPluginOptions.rootDir, assetPath) :
             path.join(this.templateDir, assetPath);
         var _browserPath = browserPath.startsWith('/') ?
-            browserPath :
+            browserPath.replaceAll('\\', '/') :
             '/' + path.relative(this.handlebarsPluginOptions.rootDir, absoluteFilepath).replaceAll('\\', '/');
         var strippedRootDir = this.handlebarsPluginOptions.assets.contextPath && path.normalize(this.handlebarsPluginOptions.assets.contextPath.replace(/\/$/, '')).replaceAll('\\', '/');
-        var strippedOutputDir = this.handlebarsPluginOptions.assets.outputDir && path.normalize(this.handlebarsPluginOptions.assets.outputDir.replace(/\/$/, '')).replaceAll('\\', '/');
+        var strippedOutputDir = !this.handlebarsPluginOptions.assets.outputDir ? '' : path.normalize(this.handlebarsPluginOptions.assets.outputDir.replace(/\/$/, '')).replaceAll('\\', '/');
         var parsedOutputDir = strippedOutputDir ? "".concat(strippedOutputDir, "/") : '';
-        var _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp("^/".concat(strippedRootDir, "/")), "/".concat(parsedOutputDir)) : _browserPath;
-        return _resolvedPathFromRoot;
+        var _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp("^/".concat(strippedRootDir, "/")), "/".concat(parsedOutputDir)) : "".concat(strippedOutputDir).concat(_browserPath);
+        var forceLeadingSlash = _resolvedPathFromRoot.startsWith('/') ? _resolvedPathFromRoot : "/".concat(_resolvedPathFromRoot);
+        return forceLeadingSlash;
     };
     return AssetsExtractor;
 }());

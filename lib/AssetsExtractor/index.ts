@@ -134,14 +134,15 @@ export class AssetsExtractor {
                                 path.join(this.templateDir, assetPath)
 
         const _browserPath = browserPath.startsWith('/') ?
-                            browserPath :
+                            browserPath.replaceAll('\\', '/') :
                             '/' + path.relative(this.handlebarsPluginOptions.rootDir, absoluteFilepath).replaceAll('\\', '/')
 
         const strippedRootDir = this.handlebarsPluginOptions.assets.contextPath && path.normalize(this.handlebarsPluginOptions.assets.contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
-        const strippedOutputDir = this.handlebarsPluginOptions.assets.outputDir && path.normalize(this.handlebarsPluginOptions.assets.outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
+        const strippedOutputDir = !this.handlebarsPluginOptions.assets.outputDir ? '' : path.normalize(this.handlebarsPluginOptions.assets.outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
 
         const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
-        const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
-        return _resolvedPathFromRoot
+        const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : `${strippedOutputDir}${_browserPath}`
+        const forceLeadingSlash = _resolvedPathFromRoot.startsWith('/') ? _resolvedPathFromRoot : `/${_resolvedPathFromRoot}`
+        return forceLeadingSlash
     }
 }
