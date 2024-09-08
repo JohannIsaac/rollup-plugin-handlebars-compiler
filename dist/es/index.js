@@ -19270,21 +19270,17 @@ var AssetsExtractor = /** @class */ (function () {
         if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
         if (handlebarsPluginOptions)
             this.handlebarsPluginOptions = handlebarsPluginOptions;
-        if (options.partialIsRootRelative)
-            this.partialIsRootRelative = options.partialIsRootRelative;
-        if (options.resolvePath)
-            this.resolvePath = options.resolvePath;
-        if (options.externalAssets)
-            this.externalAssets = options.externalAssets;
-        if (options.template) {
-            this.document = parse$1(options.template);
+        if (options.isRootRelative)
+            this.isRootRelative = options.isRootRelative;
+        if (options.source) {
+            this.document = parse$1(options.source);
         }
-        if (options.templateFilepath) {
-            this.templateFilepath = options.templateFilepath;
-            this.templateDir = path.dirname(options.templateFilepath);
+        if (options.absolutePath) {
+            this.absolutePath = options.absolutePath;
+            this.templateDir = path.dirname(options.absolutePath);
         }
-        if (options.partialPath) {
-            this.partialDir = path.dirname(options.partialPath);
+        if (options.relativePath) {
+            this.relativeDir = path.dirname(options.relativePath);
         }
     }
     AssetsExtractor.prototype.getAssetsList = function () {
@@ -19303,11 +19299,12 @@ var AssetsExtractor = /** @class */ (function () {
     AssetsExtractor.prototype.getAssetsListFromPath = function (sourcePath, node, assetsDataList) {
         if (assetsDataList === void 0) { assetsDataList = []; }
         sourcePath = sourcePath.trim();
-        var isExternal = createAssetPicomatchMatcher(this.externalAssets);
-        if (isExternal(sourcePath))
-            return;
+        var isExternal = createAssetPicomatchMatcher(this.handlebarsPluginOptions.assets.external);
         var filepath = this.resolveAssetFilepath(sourcePath);
         var outputFilepath = this.resolveOutputPathFromRoot(sourcePath);
+        var filepathRelativeToRoot = path.relative(this.handlebarsPluginOptions.rootDir, filepath);
+        if (isExternal(filepathRelativeToRoot))
+            return;
         var assetData = this.getAssetsDataFromFilepath({
             filepath: filepath,
             sourcePath: sourcePath,
@@ -19332,7 +19329,7 @@ var AssetsExtractor = /** @class */ (function () {
         }
         catch (error) {
             var elStr = serialize(nodeData.node);
-            throw new Error("Could not find ".concat(nodeData.filepath, " referenced from HTML file ").concat(this.templateFilepath, " from element ").concat(elStr, "."));
+            throw new Error("Could not find ".concat(nodeData.filepath, " referenced from HTML file ").concat(this.absolutePath, " from element ").concat(elStr, "."));
         }
         var content = fs.readFileSync(nodeData.filepath);
         var assetData = {
@@ -19351,10 +19348,10 @@ var AssetsExtractor = /** @class */ (function () {
         return path.join(rootDir, browserPath.split('/').join(path.sep));
     };
     AssetsExtractor.prototype.resolveOutputPathFromRoot = function (browserPath) {
-        if (!this.resolvePath)
+        if (!this.handlebarsPluginOptions.assets.resolve)
             return browserPath;
-        var assetPath = path.join(this.partialDir, browserPath);
-        var absoluteFilepath = this.partialIsRootRelative ?
+        var assetPath = path.join(this.relativeDir, browserPath);
+        var absoluteFilepath = this.isRootRelative ?
             path.join(this.handlebarsPluginOptions.rootDir, assetPath) :
             path.join(this.templateDir, assetPath);
         var _browserPath = browserPath.startsWith('/') ?
@@ -19423,17 +19420,15 @@ var StatementsProcessor = /** @class */ (function () {
         return { partials: partials, helpers: helpers };
     };
     StatementsProcessor.prototype.getAllAssets = function (templateData) {
-        var partialIsRootRelative = templateData.name.startsWith(ROOT_PATH_KEY);
-        var rootDir = partialIsRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
-        var templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PATH_KEY, '') : templateData.name;
+        var isRootRelative = templateData.name.startsWith(ROOT_PATH_KEY);
+        var rootDir = isRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
+        var templateName = isRootRelative ? templateData.name.replace(ROOT_PATH_KEY, '') : templateData.name;
         var absoluteTemplatePath = path.join(rootDir, templateName);
-        var resolvePath = this.handlebarsPluginOptions.assets.resolve;
         var extractor = new AssetsExtractor({
-            partialIsRootRelative: partialIsRootRelative,
-            resolvePath: resolvePath,
-            template: templateData.source,
-            templateFilepath: absoluteTemplatePath,
-            partialPath: templateName
+            isRootRelative: isRootRelative,
+            source: templateData.source,
+            absolutePath: absoluteTemplatePath,
+            relativePath: templateName
         }, this.handlebarsPluginOptions);
         var assetList = extractor.getAssetsList();
         return assetList;

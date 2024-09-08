@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.6](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/45)  2020-9-9
+
+### Added
+
+- Added support for root relative paths for partials (relative from `process.cwd()` by default but can be changed through the `rootDir` plugin option)
+- Added support for resolving and emitting assets referenced in Handlebars templates (enabled by default, but emitting and/or resolving can be disabled in the plugin options. [See Documentation](README.md))
+
+
+
 ## [1.1.5](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/36)  2020-9-2
 
 ### Changed
