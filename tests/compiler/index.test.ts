@@ -514,8 +514,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -551,8 +551,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath?.startsWith('/images')).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath?.startsWith('/images')).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -570,8 +570,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -589,8 +589,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -608,8 +608,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -627,8 +627,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -646,8 +646,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -665,8 +665,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -684,8 +684,8 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData = [...output?.values()][0]
-                    expect(fileData?.filePath).toBeTruthy()
-                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(fileData?.filepath).toBeTruthy()
+                    expect(fileData?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
                 }
             )
@@ -703,12 +703,12 @@ describe('Handlebars Plugin Compiler', () => {
                 false,
                 async (err, output) => {
                     const fileData1 = [...output?.values()][0]
-                    expect(fileData1?.filePath).toBeTruthy()
-                    expect(fileData1?.outputFilePath).toBeTruthy()
+                    expect(fileData1?.filepath).toBeTruthy()
+                    expect(fileData1?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData1?.content)).toBeTruthy()
                     const fileData2 = [...output?.values()][1]
-                    expect(fileData2?.filePath).toBeTruthy()
-                    expect(fileData2?.outputFilePath).toBeTruthy()
+                    expect(fileData2?.filepath).toBeTruthy()
+                    expect(fileData2?.outputFilepath).toBeTruthy()
                     expect(ArrayBuffer.isView(fileData2?.content)).toBeTruthy()
                 }
             )

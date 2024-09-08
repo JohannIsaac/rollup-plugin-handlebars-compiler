@@ -1,6 +1,7 @@
 import path from 'path';
 import { parse } from 'parse5';
 import { extractAssets } from './extractAssets';
+import { InputAsset } from './InputData';
 
 export interface ExtractParams {
 	partialIsRootRelative?: boolean,
@@ -32,18 +33,23 @@ export function extractModulesAndAssets(params: ExtractParams) {
 	const document = parse(template);
 
 	// extract functions mutate the AST
-	const assets = extractAssets({
-		partialIsRootRelative,
-		resolvePath,
-		document,
-		htmlDir,
-		partialDir,
-		templateFilepath,
-		rootDir,
-		externalAssets,
-		contextPath,
-		outputDir
-	})
+    let assets: InputAsset[]
+    try {
+        assets = extractAssets({
+            partialIsRootRelative,
+            resolvePath,
+            document,
+            htmlDir,
+            partialDir,
+            templateFilepath,
+            rootDir,
+            externalAssets,
+            contextPath,
+            outputDir
+        })
+    } catch (e) {
+        console.error(e)
+    }
 
 	return assets;
 }

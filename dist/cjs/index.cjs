@@ -19138,7 +19138,7 @@ function extractFirstUrlOfSrcSet(node) {
     var urls = getSrcSetUrls(srcset);
     return urls[0];
 }
-function resolveAssetFilePath(browserPath, htmlDir, projectRootDir) {
+function resolveAssetFilepath(browserPath, htmlDir, projectRootDir) {
     return path.join(browserPath.startsWith('/') ? projectRootDir : htmlDir, browserPath.split('/').join(path.sep));
 }
 function resolveOutputPathFromRoot(browserPath, partialIsRootRelative, htmlDir, partialDir, projectRootDir, contextPath, outputDir) {
@@ -19282,66 +19282,62 @@ function createAssetPicomatchMatcher(glob) {
 }
 
 function extractAssets(params) {
-    var e_1, _a, e_2, _b;
     var assetNodes = findAssets(params.document);
-    var allAssets = [];
+    var assetsDataList = [];
+    assetNodes.forEach(function (node) { return getAssetsListFromNode(node, params, assetsDataList); });
+    return assetsDataList;
+}
+function getAssetsListFromNode(node, params, assetsDataList) {
+    if (assetsDataList === void 0) { assetsDataList = []; }
+    var assetTagData = getAssetTagData(node);
+    assetTagData.paths.forEach(function (sourcePath) { return getAssetsListFromPath(sourcePath, node, params, assetsDataList); });
+}
+function getAssetsListFromPath(sourcePath, node, params, assetsDataList) {
+    if (assetsDataList === void 0) { assetsDataList = []; }
+    sourcePath = sourcePath.trim();
     var isExternal = createAssetPicomatchMatcher(params.externalAssets);
+    if (isExternal(sourcePath))
+        return;
+    var filepath = resolveAssetFilepath(sourcePath, params.htmlDir, params.rootDir);
+    var outputFilepath = getOutputFilepath(sourcePath, params);
+    var assetData = getAssetsDataFromFilepath(filepath, sourcePath, outputFilepath, node, params, assetsDataList);
+    assetsDataList.push(assetData);
+}
+function getOutputFilepath(sourcePath, params) {
+    var outputFilepath;
+    if (params.resolvePath) {
+        outputFilepath = resolveOutputPathFromRoot(sourcePath, params.partialIsRootRelative, params.htmlDir, params.partialDir, params.rootDir, params.contextPath, params.outputDir);
+    }
+    else {
+        outputFilepath = sourcePath;
+    }
+    return outputFilepath;
+}
+function getAssetsDataFromFilepath(filepath, sourcePath, outputFilepath, node, params, assetsDataList) {
+    if (assetsDataList === void 0) { assetsDataList = []; }
+    var assetTagData = getAssetTagData(node);
+    var tagDataOfAsset = Object.assign({}, assetTagData);
+    tagDataOfAsset.paths = [sourcePath];
+    var hashed = isHashedAsset(node);
+    var alreadyHandled = assetsDataList.find(function (a) { return a.filepath === filepath && a.hashed === hashed; });
+    if (alreadyHandled)
+        return null;
     try {
-        for (var assetNodes_1 = __values(assetNodes), assetNodes_1_1 = assetNodes_1.next(); !assetNodes_1_1.done; assetNodes_1_1 = assetNodes_1.next()) {
-            var node = assetNodes_1_1.value;
-            var assetTagData = getAssetTagData(node);
-            var _loop_1 = function (sourcePath) {
-                var newAssetTagData = Object.assign({}, assetTagData);
-                newAssetTagData.paths = [sourcePath];
-                sourcePath = sourcePath.trim();
-                if (isExternal(sourcePath))
-                    return "continue";
-                var filePath = resolveAssetFilePath(sourcePath, params.htmlDir, params.rootDir);
-                var outputFilePath = void 0;
-                if (params.resolvePath) {
-                    outputFilePath = resolveOutputPathFromRoot(sourcePath, params.partialIsRootRelative, params.htmlDir, params.partialDir, params.rootDir, params.contextPath, params.outputDir);
-                }
-                else {
-                    outputFilePath = sourcePath;
-                }
-                var hashed = isHashedAsset(node);
-                console.log(hashed, sourcePath);
-                var alreadyHandled = allAssets.find(function (a) { return a.filePath === filePath && a.hashed === hashed; });
-                if (!alreadyHandled) {
-                    try {
-                        fs.accessSync(filePath);
-                    }
-                    catch (error) {
-                        var elStr = serialize(node);
-                        throw new Error("Could not find ".concat(filePath, " referenced from HTML file ").concat(params.templateFilepath, " from element ").concat(elStr, "."));
-                    }
-                    var content = fs.readFileSync(filePath);
-                    allAssets.push({ filePath: filePath, outputFilePath: outputFilePath, hashed: hashed, content: content, assetTagData: newAssetTagData });
-                }
-            };
-            try {
-                for (var _c = (e_2 = void 0, __values(assetTagData.paths)), _d = _c.next(); !_d.done; _d = _c.next()) {
-                    var sourcePath = _d.value;
-                    _loop_1(sourcePath);
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (_d && !_d.done && (_b = _c.return)) _b.call(_c);
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-        }
+        fs.accessSync(filepath);
     }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (assetNodes_1_1 && !assetNodes_1_1.done && (_a = assetNodes_1.return)) _a.call(assetNodes_1);
-        }
-        finally { if (e_1) throw e_1.error; }
+    catch (error) {
+        var elStr = serialize(node);
+        throw new Error("Could not find ".concat(filepath, " referenced from HTML file ").concat(params.templateFilepath, " from element ").concat(elStr, "."));
     }
-    return allAssets;
+    var content = fs.readFileSync(filepath);
+    var assetData = {
+        filepath: filepath,
+        outputFilepath: outputFilepath,
+        hashed: hashed,
+        content: content,
+        assetTagData: tagDataOfAsset
+    };
+    return assetData;
 }
 
 function extractModulesAndAssets(params) {
@@ -19350,18 +19346,24 @@ function extractModulesAndAssets(params) {
     var partialDir = path.dirname(partialPath);
     var document = parse$3(template);
     // extract functions mutate the AST
-    var assets = extractAssets({
-        partialIsRootRelative: partialIsRootRelative,
-        resolvePath: resolvePath,
-        document: document,
-        htmlDir: htmlDir,
-        partialDir: partialDir,
-        templateFilepath: templateFilepath,
-        rootDir: rootDir,
-        externalAssets: externalAssets,
-        contextPath: contextPath,
-        outputDir: outputDir
-    });
+    var assets;
+    try {
+        assets = extractAssets({
+            partialIsRootRelative: partialIsRootRelative,
+            resolvePath: resolvePath,
+            document: document,
+            htmlDir: htmlDir,
+            partialDir: partialDir,
+            templateFilepath: templateFilepath,
+            rootDir: rootDir,
+            externalAssets: externalAssets,
+            contextPath: contextPath,
+            outputDir: outputDir
+        });
+    }
+    catch (e) {
+        console.error(e);
+    }
     return assets;
 }
 
@@ -19440,7 +19442,7 @@ var StatementsProcessor = /** @class */ (function () {
         templateData.source = this.renameAssetSources(templateData.source, assetData);
         var newAssetData = Object.assign({}, assetData);
         delete newAssetData.assetTagData;
-        assetsMap.set(assetData.filePath, newAssetData);
+        assetsMap.set(assetData.filepath, newAssetData);
     };
     // Process a partial then recursively process further nested partials
     StatementsProcessor.prototype.processHelper = function (helperPath, templateData, helpersMap) {
@@ -19545,16 +19547,16 @@ var StatementsProcessor = /** @class */ (function () {
         var fileDirectory = path.dirname(templateData.name);
         var partialFilepath = path.normalize("".concat(partialPath).concat(extname));
         // Process partials with paths nested to the current filepath
-        var nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
-        return nestedPartialFilePath;
+        var nestedPartialFilepath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/');
+        return nestedPartialFilepath;
     };
     StatementsProcessor.prototype.resolveHelperFilepath = function (helperPath, templateData) {
         var extname = '.js';
         var fileDirectory = path.dirname(templateData.name);
         var helperFilepath = path.normalize("".concat(helperPath).concat(extname));
         // Process partials with paths nested to the current filepath
-        var nestedPartialFilePath = path.join(fileDirectory, helperFilepath).replaceAll('\\', '/');
-        return nestedPartialFilePath;
+        var nestedPartialFilepath = path.join(fileDirectory, helperFilepath).replaceAll('\\', '/');
+        return nestedPartialFilepath;
     };
     // Rewrite the original source to be passed to final source map
     StatementsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
@@ -19576,7 +19578,7 @@ var StatementsProcessor = /** @class */ (function () {
         var e_1, _a, e_2, _b;
         if (!assetData || !assetData.assetTagData)
             return source;
-        var resolvedPath = assetData.outputFilePath;
+        var resolvedPath = assetData.outputFilepath;
         var paths = assetData.assetTagData.paths;
         var tag = assetData.assetTagData.tagName;
         var attributes = sourceAttributesByTag[tag];
@@ -25590,7 +25592,7 @@ function handlebarsCompilerPlugin(handlebarsPluginOptions) {
             var assetsMap = hbsTransformer.getAssetsMap();
             Array.from(assetsMap).forEach(function (_a) {
                 var _b = __read(_a, 2); _b[0]; var assetData = _b[1];
-                var outputFilepath = assetData.outputFilePath.replace(/^\//, '');
+                var outputFilepath = assetData.outputFilepath.replace(/^\//, '');
                 _this.emitFile({
                     type: 'asset',
                     fileName: outputFilepath,

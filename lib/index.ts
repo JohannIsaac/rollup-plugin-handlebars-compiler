@@ -66,7 +66,7 @@ export default function handlebarsCompilerPlugin(handlebarsPluginOptions: Handle
 			if (!handlebarsPluginOptions.assets.emit || !hbsTransformer) return
 			const assetsMap = hbsTransformer.getAssetsMap()
 			Array.from(assetsMap).forEach(([absoluteFilepath, assetData]) => {
-				const outputFilepath = assetData.outputFilePath.replace(/^\//, '')
+				const outputFilepath = assetData.outputFilepath.replace(/^\//, '')
 				this.emitFile({
 					type: 'asset',
 					fileName: outputFilepath,

@@ -141,7 +141,7 @@ export default class StatementsProcessor {
 		templateData.source = this.renameAssetSources(templateData.source, assetData)
 		const newAssetData = Object.assign({}, assetData)
 		delete newAssetData.assetTagData
-		assetsMap.set(assetData.filePath, newAssetData)
+		assetsMap.set(assetData.filepath, newAssetData)
 	}
 
 	// Process a partial then recursively process further nested partials
@@ -274,8 +274,8 @@ export default class StatementsProcessor {
 		const fileDirectory = path.dirname(templateData.name)
 		const partialFilepath = path.normalize(`${partialPath}${extname}`)
 		// Process partials with paths nested to the current filepath
-		const nestedPartialFilePath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/')
-		return nestedPartialFilePath
+		const nestedPartialFilepath = path.join(fileDirectory, partialFilepath).replaceAll('\\', '/')
+		return nestedPartialFilepath
 	}
 
 	private resolveHelperFilepath(helperPath: string, templateData: TemplateData) {
@@ -283,8 +283,8 @@ export default class StatementsProcessor {
 		const fileDirectory = path.dirname(templateData.name)
 		const helperFilepath = path.normalize(`${helperPath}${extname}`)
 		// Process partials with paths nested to the current filepath
-		const nestedPartialFilePath = path.join(fileDirectory, helperFilepath).replaceAll('\\', '/')
-		return nestedPartialFilePath
+		const nestedPartialFilepath = path.join(fileDirectory, helperFilepath).replaceAll('\\', '/')
+		return nestedPartialFilepath
 	}
 
 	// Rewrite the original source to be passed to final source map
@@ -307,7 +307,7 @@ export default class StatementsProcessor {
 	// Rewrite the original source to be passed to final source map
 	private renameAssetSources(source: string, assetData: InputAsset) {
 		if (!assetData || !assetData.assetTagData) return source
-		const resolvedPath = assetData.outputFilePath
+		const resolvedPath = assetData.outputFilepath
 		const paths = assetData.assetTagData.paths
 		const tag = assetData.assetTagData.tagName
 		const attributes = sourceAttributesByTag[tag]
