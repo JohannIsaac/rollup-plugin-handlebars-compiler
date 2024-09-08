@@ -14,36 +14,29 @@ removeOutputDir()
 const PREPARATIONS = [
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/simple.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/invalid-syntax-error.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
             knownHelpersOnly: true
         }
     
@@ -51,14 +44,12 @@ const PREPARATIONS = [
             '../src/invalid-unknown-helpers.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
             helpers: {
                 someKnownHelper: () => 'some known helper'
             },
@@ -72,14 +63,12 @@ const PREPARATIONS = [
             '../src/with-known-helpers.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
             helpers: {
                 descriptionHelper
             }
@@ -89,14 +78,12 @@ const PREPARATIONS = [
             '../src/with-helpers-commonjs.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
             helpers: {
                 list: function(items: Array<object>, options) {
                     const itemsAsHtml = items.map(item => "<li>" + options.fn(item) + "</li>");
@@ -109,7 +96,6 @@ const PREPARATIONS = [
             '../src/with-block-helpers.hbs',
             pluginOptions,
             true,
-            null,
         )
     
     },
@@ -117,7 +103,6 @@ const PREPARATIONS = [
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
             partials: {
                 otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
@@ -127,14 +112,12 @@ const PREPARATIONS = [
             '../src/with-plugin-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
             partials: {
                 otherPartial: fs.readFileSync(path.join(__dirname, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
             }
@@ -144,7 +127,6 @@ const PREPARATIONS = [
             '../src/with-plugin-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -158,7 +140,6 @@ const PREPARATIONS = [
             '../src/partialDirs/with-root-relative-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -172,7 +153,6 @@ const PREPARATIONS = [
             '../src/partialDirs/with-nested-root-relative-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -186,91 +166,85 @@ const PREPARATIONS = [
             '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/with-dir-partials.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/nested-templates/with-parent-dir-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/nested-templates/with-cousin-dir-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/with-partial-block.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
     async () => {
     
-        const pluginOptions: HandlebarsPluginOptions = {
-            rootDir: path.join(__dirname, '../'),
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
     
         testTemplate(
             '../src/with-inline-partial.hbs',
             pluginOptions,
             true,
-            null,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-img-src.hbs',
+            pluginOptions,
+            true,
         )
     },
 ]

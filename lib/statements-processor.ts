@@ -10,6 +10,11 @@ import { sourceAttributesByTag } from './template-parser/utils';
 
 export const ROOT_PATH_KEY = '__ROOT__/'
 
+// Regex for whitespace in group
+const g_ws = "\\r|\\n|\\s"
+// Regex for whitespace in character class
+const c_ws = "\\r\\n\\s"
+
 
 
 interface TemplateData {
@@ -40,7 +45,7 @@ export default class StatementsProcessor {
     }
 
 	static renameAllRootPathPartials(source: string) {
-		return source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)\\/`, 'gms'), `$1${ROOT_PATH_KEY}`)
+		return source.replaceAll(new RegExp(`(\\{\\{#?>(${g_ws})*)\\/`, 'gms'), `$1${ROOT_PATH_KEY}`)
 	}
 
     static ImportScanner = class extends Handlebars.Visitor {
@@ -291,7 +296,7 @@ export default class StatementsProcessor {
 	private renamePartialInstances(source: string, fromName: string, resolvedPartialPath: string): string {
 		const extname = path.extname(resolvedPartialPath)
 		const resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp(`${extname}$`), '')
-		source = source.replaceAll(new RegExp(`(\\{\\{#?>(\\n|\\s)*)(${fromName})(?=[\\r\\n\\s\\}])`, 'gms'), `$1${resolvedPartialName}`)
+		source = source.replaceAll(new RegExp(`(\\{\\{#?>(${g_ws})*)(${fromName})(?=[${c_ws}\\}])`, 'gms'), `$1${resolvedPartialName}`)
 		return source
 	}
 
@@ -300,7 +305,7 @@ export default class StatementsProcessor {
 		const extname = path.extname(resolvedHelperPath)
 		let resolvedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp(`${extname}$`), '')
 		resolvedHelperName = this.escapePathName(resolvedHelperName)
-		source = source.replaceAll(new RegExp(`(\\{\\{(?:\\n|\\s)*)(\\[?)${fromName}(\\]?)(?=[\\r\\n\\s\\}])`, 'gms'), `$1$2${resolvedHelperName}$3`)
+		source = source.replaceAll(new RegExp(`(\\{\\{(?:${g_ws})*)(\\[?)${fromName}(\\]?)(?=[${c_ws}\\}])`, 'gms'), `$1$2${resolvedHelperName}$3`)
 		return source
 	}
 
@@ -311,9 +316,10 @@ export default class StatementsProcessor {
 		const paths = assetData.assetTagData.paths
 		const tag = assetData.assetTagData.tagName
 		const attributes = sourceAttributesByTag[tag]
-		for (const path of paths) {
+		for (let path of paths) {
+			path = path.trim()
 			for (const attr of attributes) {
-				source = source.replaceAll(new RegExp(`\\b(${attr}="[^"]*?)(${path}\\b(,?))`, 'gms'), `$1${resolvedPath}$3`)
+				source = source.replaceAll(new RegExp(`\\b(${attr}(?:${g_ws})*=(?:${g_ws})*"(?:${g_ws})*[^"]*?)(${path}\\b(,?))`, 'gms'), `$1${resolvedPath}$3`)
 			}
 		}
 		return source

@@ -27543,6 +27543,7 @@ function extractAssets(params) {
             var node = assetNodes_1_1.value;
             var assetTagData = getAssetTagData(node);
             var _loop_1 = function (sourcePath) {
+                sourcePath = sourcePath.trim();
                 if (isExternal(sourcePath))
                     return "continue";
                 var filePath = resolveAssetFilePath(sourcePath, params.htmlDir, params.rootDir, params.absolutePathPrefix);
@@ -27615,6 +27616,10 @@ function extractModulesAndAssets(params) {
 }
 
 var ROOT_PATH_KEY = '__ROOT__/';
+// Regex for whitespace in group
+var g_ws = "\\r|\\n|\\s";
+// Regex for whitespace in character class
+var c_ws = "\\r\\n\\s";
 var StatementsProcessor = /** @class */ (function () {
     function StatementsProcessor(templateData, handlebarsPluginOptions) {
         if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
@@ -27625,7 +27630,7 @@ var StatementsProcessor = /** @class */ (function () {
         this.assets = processResult.assets;
     }
     StatementsProcessor.renameAllRootPathPartials = function (source) {
-        return source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)\\/", 'gms'), "$1".concat(ROOT_PATH_KEY));
+        return source.replaceAll(new RegExp("(\\{\\{#?>(".concat(g_ws, ")*)\\/"), 'gms'), "$1".concat(ROOT_PATH_KEY));
     };
     // Recursive function for getting nested partials with pathname
     StatementsProcessor.prototype.processStatements = function (templateData, partialsMap, helpersMap, assetsMap) {
@@ -27812,7 +27817,7 @@ var StatementsProcessor = /** @class */ (function () {
     StatementsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
         var extname = path.extname(resolvedPartialPath);
         var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
-        source = source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)(".concat(fromName, ")(?=[\\r\\n\\s\\}])"), 'gms'), "$1".concat(resolvedPartialName));
+        source = source.replaceAll(new RegExp("(\\{\\{#?>(".concat(g_ws, ")*)(").concat(fromName, ")(?=[").concat(c_ws, "\\}])"), 'gms'), "$1".concat(resolvedPartialName));
         return source;
     };
     // Rewrite the original source to be passed to final source map
@@ -27820,7 +27825,7 @@ var StatementsProcessor = /** @class */ (function () {
         var extname = path.extname(resolvedHelperPath);
         var resolvedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp("".concat(extname, "$")), '');
         resolvedHelperName = this.escapePathName(resolvedHelperName);
-        source = source.replaceAll(new RegExp("(\\{\\{(?:\\n|\\s)*)(\\[?)".concat(fromName, "(\\]?)(?=[\\r\\n\\s\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
+        source = source.replaceAll(new RegExp("(\\{\\{(?:".concat(g_ws, ")*)(\\[?)").concat(fromName, "(\\]?)(?=[").concat(c_ws, "\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
         return source;
     };
     // Rewrite the original source to be passed to final source map
@@ -27835,10 +27840,11 @@ var StatementsProcessor = /** @class */ (function () {
         try {
             for (var paths_1 = __values(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
                 var path_1 = paths_1_1.value;
+                path_1 = path_1.trim();
                 try {
                     for (var attributes_1 = (e_2 = void 0, __values(attributes)), attributes_1_1 = attributes_1.next(); !attributes_1_1.done; attributes_1_1 = attributes_1.next()) {
                         var attr = attributes_1_1.value;
-                        source = source.replaceAll(new RegExp("\\b(".concat(attr, "=\"[^\"]*?)(").concat(path_1, "\\b(,?))"), 'gms'), "$1".concat(resolvedPath, "$3"));
+                        source = source.replaceAll(new RegExp("\\b(".concat(attr, "(?:").concat(g_ws, ")*=(?:").concat(g_ws, ")*\"(?:").concat(g_ws, ")*[^\"]*?)(").concat(path_1, "\\b(,?))"), 'gms'), "$1".concat(resolvedPath, "$3"));
                     }
                 }
                 catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -33870,9 +33876,7 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/simple.hbs', pluginOptions);
             return [2 /*return*/];
         });
@@ -33880,9 +33884,7 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/invalid-syntax-error.hbs', pluginOptions);
             return [2 /*return*/];
         });
@@ -33891,7 +33893,6 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
                 knownHelpersOnly: true
             };
             testTemplate('../src/invalid-unknown-helpers.hbs', pluginOptions);
@@ -33902,7 +33903,6 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
                 helpers: {
                     someKnownHelper: function () { return 'some known helper'; }
                 },
@@ -33919,7 +33919,6 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
                 helpers: {
                     descriptionHelper: descriptionHelper$1
                 }
@@ -33932,7 +33931,6 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
                 helpers: {
                     list: function (items, options) {
                         var itemsAsHtml = items.map(function (item) { return "<li>" + options.fn(item) + "</li>"; });
@@ -33948,7 +33946,6 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
                 partials: {
                     otherPartial: fs.readFileSync(path.join(__dirname$1, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
                 }
@@ -33961,7 +33958,6 @@ var PREPARATIONS = [
         var pluginOptions;
         return __generator(this, function (_a) {
             pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
                 partials: {
                     otherPartial: fs.readFileSync(path.join(__dirname$1, '../src/partialDirs/anotherDir/otherPartial.hbs')).toString()
                 }
@@ -34003,9 +33999,7 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/with-dir-partials.hbs', pluginOptions);
             return [2 /*return*/];
         });
@@ -34013,9 +34007,7 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/nested-templates/nested/with-ancestor-dir-partial.hbs', pluginOptions);
             return [2 /*return*/];
         });
@@ -34023,9 +34015,7 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/nested-templates/with-parent-dir-partial.hbs', pluginOptions);
             return [2 /*return*/];
         });
@@ -34033,9 +34023,7 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/nested-templates/with-cousin-dir-partial.hbs', pluginOptions);
             return [2 /*return*/];
         });
@@ -34043,10 +34031,16 @@ var PREPARATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
-            pluginOptions = {
-                rootDir: path.join(__dirname$1, '../'),
-            };
+            pluginOptions = {};
             testTemplate('../src/with-partial-block.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {};
+            testTemplate('../src/with-inline-partial.hbs', pluginOptions);
             return [2 /*return*/];
         });
     }); },
@@ -34056,7 +34050,7 @@ var PREPARATIONS = [
             pluginOptions = {
                 rootDir: path.join(__dirname$1, '../'),
             };
-            testTemplate('../src/with-inline-partial.hbs', pluginOptions);
+            testTemplate('../src/with-img-src.hbs', pluginOptions);
             return [2 /*return*/];
         });
     }); },

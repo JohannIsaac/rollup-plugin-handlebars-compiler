@@ -32,7 +32,8 @@ export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
 
   for (const node of assetNodes) {
     const assetTagData = getAssetTagData(node);
-    for (const sourcePath of assetTagData.paths) {
+    for (let sourcePath of assetTagData.paths) {
+      sourcePath = sourcePath.trim()
       if (isExternal(sourcePath)) continue;
 
       const filePath = resolveAssetFilePath(

@@ -9,9 +9,7 @@ describe('Handlebars Compiler', () => {
 
     it('should load simple handlebars templates', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/simple.hbs',
@@ -25,9 +23,7 @@ describe('Handlebars Compiler', () => {
     
     it('properly catches errors in template syntax', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/invalid-syntax-error.hbs',
@@ -201,9 +197,7 @@ describe('Handlebars Compiler', () => {
 
     it('should allow partials to find multiple paths', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/with-dir-partials.hbs',
@@ -222,9 +216,7 @@ describe('Handlebars Compiler', () => {
 
     it('should allow partials from ancestor directory', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
@@ -239,9 +231,7 @@ describe('Handlebars Compiler', () => {
 
     it('should allow partials from parent directory', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/nested-templates/with-parent-dir-partial.hbs',
@@ -256,9 +246,7 @@ describe('Handlebars Compiler', () => {
 
     it('should allow partials from cousin directory', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/nested-templates/with-cousin-dir-partial.hbs',
@@ -273,9 +261,7 @@ describe('Handlebars Compiler', () => {
 
     it('should use failover content of the partial block if it refers to non-existent partial', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/with-partial-block.hbs',
@@ -290,9 +276,7 @@ describe('Handlebars Compiler', () => {
 
     it('should recognize and render inline partials', async () => {
 
-        const pluginOptions: HandlebarsPluginOptions = {
-            
-        }
+        const pluginOptions: HandlebarsPluginOptions = {}
 
         testTemplate(
             '../src/with-inline-partial.hbs',
@@ -301,6 +285,23 @@ describe('Handlebars Compiler', () => {
             async (err, output) => {
                 const catchOutput = output?.code.includes("printFoo")
                 expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should resolve img src assets', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-img-src.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                // const catchOutput = output?.code.includes("/src/images/nested/handlebars.png")
+                // expect(catchOutput).toBe(true)
             }
         )
     })

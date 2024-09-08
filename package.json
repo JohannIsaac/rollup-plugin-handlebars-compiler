@@ -8,6 +8,8 @@
     "test": "npm run test-lint && npm run test-jest",
     "test-jest": "npm run build-test-files && jest --coverage --verbose",
     "test-jest-only": "jest --coverage --verbose",
+    "test-compiler-only": "jest tests/compiler/index.test.ts",
+    "test-runtime-only": "jest tests/runtime/runtime.test.ts",
     "test-dev": "jest --config jest.dev.config.js --verbose",
     "test-lint": "tslint -c tslint.json 'lib/*.ts'",
     "build-test-files": "rollup --config tests/compiler/rollup.config.js",
