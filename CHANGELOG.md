@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.8](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/45)  2020-9-9
+
+### Changed
+
+- Updated README
+- Optimized size
+
+
+
 ## [1.1.6](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/45)  2020-9-9
 
 ### Added
