@@ -30,6 +30,7 @@ interface IPluginOptions {
         emit?: boolean | null;
         contextPath?: string;
         outputDir?: string;
+        external?: string | string[];
     };
 }
 
