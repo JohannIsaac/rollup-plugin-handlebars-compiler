@@ -95,8 +95,6 @@ export default class HandlebarsCompiler {
 				return template(templateData, options)
 			};
 		`;
-		// Format JS body before passing
-		body = js_beautify(body)
 
         return { code: body }
 	}

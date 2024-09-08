@@ -6,7 +6,6 @@ var Handlebars = require('handlebars');
 var picomatch = require('picomatch');
 var parse5Utils = require('@web/parse5-utils');
 var parse5 = require('parse5');
-var jsBeautify = require('js-beautify');
 
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -805,8 +804,6 @@ var HandlebarsCompiler = /** @class */ (function () {
             var _b = __read(_a, 2), partial = _b[0], compiled = _b[1];
             return "Handlebars.registerPartial('".concat(partial, "', Handlebars.template(").concat(compiled, "));");
         }).join('\n'), "\n\t\t\tconst template = Handlebars.template(").concat(code, ");\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(this.templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
-        // Format JS body before passing
-        body = jsBeautify.js_beautify(body);
         return { code: body };
     };
     return HandlebarsCompiler;
