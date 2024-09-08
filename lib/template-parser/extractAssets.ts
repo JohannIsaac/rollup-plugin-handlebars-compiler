@@ -1,23 +1,23 @@
-import { serialize } from 'parse5';
 import fs from 'fs';
+import path from 'path';
+import { serialize } from 'parse5';
 import { Document } from 'parse5/dist/tree-adapters/default.js';
+import { Element } from '@web/parse5-utils';
+
 import {
     findAssets,
     getAssetTagData,
     isHashedAsset,
-    resolveAssetFilepath,
     createAssetPicomatchMatcher,
-    resolveOutputPathFromRoot,
 } from './utils';
 import { InputAsset } from './InputData';
-import { Element } from '@web/parse5-utils';
 
 export interface ExtractAssetsParams {
     partialIsRootRelative?: boolean;
     resolvePath?: boolean;
     document: Document;
     templateFilepath: string;
-    htmlDir: string;
+    templateDir: string;
     partialDir: string;
     rootDir: string;
     externalAssets?: string | string[];
@@ -65,8 +65,7 @@ function getAssetsListFromPath(
 
     const filepath = resolveAssetFilepath(
         sourcePath,
-        params.htmlDir,
-        params.rootDir,
+        params
     );
     const outputFilepath = getOutputFilepath(sourcePath, params)
 
@@ -85,21 +84,12 @@ function getOutputFilepath(
     sourcePath: string,
     params: ExtractAssetsParams,
 ) {
-    let outputFilepath: string
-    if (params.resolvePath) {
-        outputFilepath = resolveOutputPathFromRoot(
-            sourcePath,
-            params.partialIsRootRelative,
-            params.htmlDir,
-            params.partialDir,
-            params.rootDir,
-            params.contextPath,
-            params.outputDir
-        )
-    } else {
-        outputFilepath = sourcePath
-    }
-    return outputFilepath
+    return !params.resolvePath ?
+            sourcePath :
+            resolveOutputPathFromRoot(
+                sourcePath,
+                params
+            )
 }
 
 function getAssetsDataFromFilepath(
@@ -137,4 +127,27 @@ function getAssetsDataFromFilepath(
     }
 
     return assetData
+}
+
+function resolveAssetFilepath(
+	browserPath: string,
+	params: ExtractAssetsParams
+) {
+	return path.join(
+		browserPath.startsWith('/') ? params.rootDir : params.templateDir,
+		browserPath.split('/').join(path.sep),
+	);
+}
+
+function resolveOutputPathFromRoot(
+	browserPath: string,
+	params: ExtractAssetsParams
+) {
+	const absoluteFilepath = params.partialIsRootRelative ? path.join(params.rootDir, params.partialDir, browserPath) : path.join(params.templateDir, params.partialDir, browserPath)
+	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(params.rootDir, absoluteFilepath).replaceAll('\\', '/')
+	const strippedRootDir = params.contextPath && path.normalize(params.contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
+	const strippedOutputDir = params.outputDir && path.normalize(params.outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
+	const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
+	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
+	return _resolvedPathFromRoot
 }

@@ -28,7 +28,7 @@ export function extractModulesAndAssets(params: ExtractParams) {
 		outputDir
 	} = params;
 	
-	const htmlDir = path.dirname(templateFilepath);
+	const templateDir = path.dirname(templateFilepath);
 	const partialDir = path.dirname(partialPath);
 	const document = parse(template);
 
@@ -39,7 +39,7 @@ export function extractModulesAndAssets(params: ExtractParams) {
             partialIsRootRelative,
             resolvePath,
             document,
-            htmlDir,
+            templateDir,
             partialDir,
             templateFilepath,
             rootDir,

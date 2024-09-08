@@ -28,35 +28,6 @@ function extractFirstUrlOfSrcSet(node: Element) {
 	return urls[0];
 }
 
-export function resolveAssetFilepath(
-	browserPath: string,
-	htmlDir: string,
-	projectRootDir: string
-) {
-	return path.join(
-		browserPath.startsWith('/') ? projectRootDir : htmlDir,
-		browserPath.split('/').join(path.sep),
-	);
-}
-
-export function resolveOutputPathFromRoot(
-	browserPath: string,
-	partialIsRootRelative: boolean,
-	htmlDir: string,
-	partialDir: string,
-	projectRootDir: string,
-	contextPath?: string,
-	outputDir?: string
-) {
-	const absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath)
-	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/')
-	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
-	const strippedOutputDir = outputDir && path.normalize(outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
-	const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
-	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
-	return _resolvedPathFromRoot
-}
-
 function getSourceAttribute(node: Element) {
 	switch (getTagName(node)) {
 		case 'img': {

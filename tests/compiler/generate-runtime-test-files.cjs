@@ -27405,18 +27405,6 @@ function extractFirstUrlOfSrcSet(node) {
     var urls = getSrcSetUrls(srcset);
     return urls[0];
 }
-function resolveAssetFilepath(browserPath, htmlDir, projectRootDir) {
-    return path.join(browserPath.startsWith('/') ? projectRootDir : htmlDir, browserPath.split('/').join(path.sep));
-}
-function resolveOutputPathFromRoot(browserPath, partialIsRootRelative, htmlDir, partialDir, projectRootDir, contextPath, outputDir) {
-    var absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath);
-    var _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/');
-    var strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/');
-    var strippedOutputDir = outputDir && path.normalize(outputDir.replace(/\/$/, '')).replaceAll('\\', '/');
-    var parsedOutputDir = strippedOutputDir ? "".concat(strippedOutputDir, "/") : '';
-    var _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp("^/".concat(strippedRootDir, "/")), "/".concat(parsedOutputDir)) : _browserPath;
-    return _resolvedPathFromRoot;
-}
 function getSourceAttribute(node) {
     switch (getTagName(node)) {
         case 'img': {
@@ -27565,20 +27553,15 @@ function getAssetsListFromPath(sourcePath, node, params, assetsDataList) {
     var isExternal = createAssetPicomatchMatcher(params.externalAssets);
     if (isExternal(sourcePath))
         return;
-    var filepath = resolveAssetFilepath(sourcePath, params.htmlDir, params.rootDir);
+    var filepath = resolveAssetFilepath(sourcePath, params);
     var outputFilepath = getOutputFilepath(sourcePath, params);
     var assetData = getAssetsDataFromFilepath(filepath, sourcePath, outputFilepath, node, params, assetsDataList);
     assetsDataList.push(assetData);
 }
 function getOutputFilepath(sourcePath, params) {
-    var outputFilepath;
-    if (params.resolvePath) {
-        outputFilepath = resolveOutputPathFromRoot(sourcePath, params.partialIsRootRelative, params.htmlDir, params.partialDir, params.rootDir, params.contextPath, params.outputDir);
-    }
-    else {
-        outputFilepath = sourcePath;
-    }
-    return outputFilepath;
+    return !params.resolvePath ?
+        sourcePath :
+        resolveOutputPathFromRoot(sourcePath, params);
 }
 function getAssetsDataFromFilepath(filepath, sourcePath, outputFilepath, node, params, assetsDataList) {
     if (assetsDataList === void 0) { assetsDataList = []; }
@@ -27606,10 +27589,22 @@ function getAssetsDataFromFilepath(filepath, sourcePath, outputFilepath, node, p
     };
     return assetData;
 }
+function resolveAssetFilepath(browserPath, params) {
+    return path.join(browserPath.startsWith('/') ? params.rootDir : params.templateDir, browserPath.split('/').join(path.sep));
+}
+function resolveOutputPathFromRoot(browserPath, params) {
+    var absoluteFilepath = params.partialIsRootRelative ? path.join(params.rootDir, params.partialDir, browserPath) : path.join(params.templateDir, params.partialDir, browserPath);
+    var _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(params.rootDir, absoluteFilepath).replaceAll('\\', '/');
+    var strippedRootDir = params.contextPath && path.normalize(params.contextPath.replace(/\/$/, '')).replaceAll('\\', '/');
+    var strippedOutputDir = params.outputDir && path.normalize(params.outputDir.replace(/\/$/, '')).replaceAll('\\', '/');
+    var parsedOutputDir = strippedOutputDir ? "".concat(strippedOutputDir, "/") : '';
+    var _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp("^/".concat(strippedRootDir, "/")), "/".concat(parsedOutputDir)) : _browserPath;
+    return _resolvedPathFromRoot;
+}
 
 function extractModulesAndAssets(params) {
     var partialIsRootRelative = params.partialIsRootRelative, resolvePath = params.resolvePath, template = params.template, templateFilepath = params.templateFilepath, partialPath = params.partialPath, rootDir = params.rootDir, externalAssets = params.externalAssets, contextPath = params.contextPath, outputDir = params.outputDir;
-    var htmlDir = path.dirname(templateFilepath);
+    var templateDir = path.dirname(templateFilepath);
     var partialDir = path.dirname(partialPath);
     var document = parse$3(template);
     // extract functions mutate the AST
@@ -27619,7 +27614,7 @@ function extractModulesAndAssets(params) {
             partialIsRootRelative: partialIsRootRelative,
             resolvePath: resolvePath,
             document: document,
-            htmlDir: htmlDir,
+            templateDir: templateDir,
             partialDir: partialDir,
             templateFilepath: templateFilepath,
             rootDir: rootDir,
