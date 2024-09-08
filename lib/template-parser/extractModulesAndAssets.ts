@@ -3,50 +3,47 @@ import { parse } from 'parse5';
 import { extractAssets } from './extractAssets';
 
 export interface ExtractParams {
-  partialIsRootRelative?: boolean,
-  resolvePath?: boolean;
-  html: string;
-  htmlFilePath: string;
-  partialPath: string;
-  rootDir: string;
-  externalAssets?: string | string[];
-  absolutePathPrefix?: string;
-  contextPath?: string;
-  outputDir?: string
+	partialIsRootRelative?: boolean,
+	resolvePath?: boolean;
+	template: string;
+	templateFilepath: string;
+	partialPath: string;
+	rootDir: string;
+	externalAssets?: string | string[];
+	contextPath?: string;
+	outputDir?: string
 }
 
 export function extractModulesAndAssets(params: ExtractParams) {
-  const {
-    partialIsRootRelative,
-    resolvePath,
-    html,
-    htmlFilePath,
-    partialPath,
-    rootDir,
-    externalAssets,
-    absolutePathPrefix,
-    contextPath,
-    outputDir
-  } = params;
-  
-  const htmlDir = path.dirname(htmlFilePath);
-  const partialDir = path.dirname(partialPath);
-  const document = parse(html);
+	const {
+		partialIsRootRelative,
+		resolvePath,
+		template,
+		templateFilepath,
+		partialPath,
+		rootDir,
+		externalAssets,
+		contextPath,
+		outputDir
+	} = params;
+	
+	const htmlDir = path.dirname(templateFilepath);
+	const partialDir = path.dirname(partialPath);
+	const document = parse(template);
 
-  // extract functions mutate the AST
-  const assets = extractAssets({
-    partialIsRootRelative,
-    resolvePath,
-    document,
-    htmlDir,
-    partialDir,
-    htmlFilePath,
-    rootDir,
-    externalAssets,
-    absolutePathPrefix,
-    contextPath,
-    outputDir
-  })
+	// extract functions mutate the AST
+	const assets = extractAssets({
+		partialIsRootRelative,
+		resolvePath,
+		document,
+		htmlDir,
+		partialDir,
+		templateFilepath,
+		rootDir,
+		externalAssets,
+		contextPath,
+		outputDir
+	})
 
-  return assets;
+	return assets;
 }

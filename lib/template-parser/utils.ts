@@ -31,17 +31,11 @@ function extractFirstUrlOfSrcSet(node: Element) {
 export function resolveAssetFilePath(
 	browserPath: string,
 	htmlDir: string,
-	projectRootDir: string,
-	absolutePathPrefix?: string,
+	projectRootDir: string
 ) {
-	const _browserPath =
-		absolutePathPrefix && browserPath[0] === '/'
-			? '/' + path.posix.relative(absolutePathPrefix, browserPath)
-			: browserPath;
-	// const fileDir = partialIsRootRelative ? path.relative(projectRootDir, htmlDir)
 	return path.join(
-		_browserPath.startsWith('/') ? projectRootDir : htmlDir,
-		_browserPath.split('/').join(path.sep),
+		browserPath.startsWith('/') ? projectRootDir : htmlDir,
+		browserPath.split('/').join(path.sep),
 	);
 }
 
@@ -63,7 +57,7 @@ export function resolveOutputPathFromRoot(
 	return _resolvedPathFromRoot
 }
 
-export function getSourceAttribute(node: Element) {
+function getSourceAttribute(node: Element) {
 	switch (getTagName(node)) {
 		case 'img': {
 			return 'src';

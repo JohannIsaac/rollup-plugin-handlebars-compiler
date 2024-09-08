@@ -4,8 +4,8 @@ import path from 'path';
 import HandlebarsTransformer from '../../lib/HandlebarsTransformer';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index';
-import { CompileResult } from '../../lib/types/handlebars/index';
-import { AssetsMap } from '../../lib/types/source-map/index';
+import { CompileResult } from '../../lib/types/Handlebars/index';
+import { AssetsMap } from '../../lib/types/SourceMap/index';
 import { js_beautify } from 'js-beautify';
 
 import { getPluginOptions } from '../../lib/index'

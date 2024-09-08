@@ -3,11 +3,11 @@ import StatementsProcessor from './StatementsProcessor';
 import pluginOptions from './plugin-options';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
-import { CompileResult } from './types/handlebars';
+import { CompileResult } from './types/Handlebars';
 import HandlebarsCompiler from './HandlebarsCompiler';
 import { SourceMap } from './SourceMap';
 import { ImportsMap } from './ImportsMap';
-import { AssetsMap } from './types/source-map';
+import { AssetsMap } from './types/SourceMap';
 
 export default class HandlebarsTransformer {
     handlebarsPluginOptions: HandlebarsPluginOptions

@@ -1,5 +1,5 @@
 import path from 'path'
-import { FileModule, ImportModule, ImportsData, PathMap, SourceFile } from './types/source-map'
+import { FileModule, ImportModule, ImportsData, PathMap, SourceFile } from './types/SourceMap'
 
 export class ImportsMap {
     constructor(paths: PathMap) {

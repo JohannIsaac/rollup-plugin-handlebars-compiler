@@ -4,7 +4,7 @@ import path from 'path';
 import HandlebarsTransformer from '../../lib/HandlebarsTransformer';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
-import { CompileResult } from '../../lib/types/handlebars';
+import { CompileResult } from '../../lib/types/Handlebars';
 import { js_beautify } from 'js-beautify';
 
 type TestFn = (err: Error, output: CompileResult) => {}

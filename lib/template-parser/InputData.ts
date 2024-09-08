@@ -21,7 +21,7 @@ export interface InputAsset {
 }
 
 export interface InputData {
-  html: string;
+  template: string;
   name: string;
   moduleImports: ScriptModuleTag[];
   inlineModules: ScriptModuleTag[];
