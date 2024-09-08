@@ -13,6 +13,7 @@ const CONFIG_TEMPLATE = {
         '@web/parse5-utils',
         'parse5',
         'picomatch',
+        'js-beautify'
     ],
     input: 'lib/index.ts',
     plugins: [
