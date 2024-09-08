@@ -4,7 +4,6 @@ import Handlebars from 'handlebars';
 import picomatch from 'picomatch';
 import { getTagName, getAttribute, findElements } from '@web/parse5-utils';
 import { parse as parse$1, serialize } from 'parse5';
-import { js_beautify } from 'js-beautify';
 
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -803,8 +802,6 @@ var HandlebarsCompiler = /** @class */ (function () {
             var _b = __read(_a, 2), partial = _b[0], compiled = _b[1];
             return "Handlebars.registerPartial('".concat(partial, "', Handlebars.template(").concat(compiled, "));");
         }).join('\n'), "\n\t\t\tconst template = Handlebars.template(").concat(code, ");\n\t\t\texport default (data, options) => {\n\t\t\t\tif (!data || typeof data !== 'object') {\n\t\t\t\t\tdata = {}\n\t\t\t\t}\n\t\t\t\tlet templateData = Object.assign({}, ").concat(JSON.stringify(this.templateData), ", data)\n\t\t\t\treturn template(templateData, options)\n\t\t\t};\n\t\t");
-        // Format JS body before passing
-        body = js_beautify(body);
         return { code: body };
     };
     return HandlebarsCompiler;

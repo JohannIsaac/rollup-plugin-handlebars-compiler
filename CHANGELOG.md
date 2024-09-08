@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.2.0](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/51)  2020-9-9
+
+### Changed
+
+- Removed js-beautify package for optimization and because of lack of support
+
+
+
 ## [1.1.9](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/50)  2020-9-9
 
 ### Changed
