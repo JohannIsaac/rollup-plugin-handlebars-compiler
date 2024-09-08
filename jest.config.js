@@ -5,7 +5,7 @@ export default {
     },
     testEnvironment: 'node',
     moduleFileExtensions: ['ts', 'js'],
-    collectCoverageFrom: ['lib/**/!(*.d.ts|*index.ts)', 'dist/es/**'],
+    collectCoverageFrom: ['lib/**/!(*.d.ts|*index.ts)'],
     testPathIgnorePatterns: [
       'dev-tests/.*',
     ]

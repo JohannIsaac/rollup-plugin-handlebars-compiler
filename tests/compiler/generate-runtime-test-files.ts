@@ -1,5 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+const filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(filename)
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index.js';
 import { removeOutputDir, testTemplate } from './helpers.js';
@@ -8,7 +11,8 @@ import descriptionHelper from '../src/helpers-commonjs/descriptionHelper.js';
 
 removeOutputDir()
 
-const PREPARATIONS = [
+const HANDLEBARS_OPERATIONS = [
+
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {}
@@ -17,7 +21,6 @@ const PREPARATIONS = [
             '../src/simple.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -29,7 +32,6 @@ const PREPARATIONS = [
             '../src/invalid-syntax-error.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -43,7 +45,6 @@ const PREPARATIONS = [
             '../src/invalid-unknown-helpers.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -63,7 +64,6 @@ const PREPARATIONS = [
             '../src/with-known-helpers.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -79,7 +79,6 @@ const PREPARATIONS = [
             '../src/with-helpers-commonjs.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -98,7 +97,6 @@ const PREPARATIONS = [
             '../src/with-block-helpers.hbs',
             pluginOptions,
             true,
-            null,
         )
     
     },
@@ -115,7 +113,6 @@ const PREPARATIONS = [
             '../src/with-plugin-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -131,7 +128,45 @@ const PREPARATIONS = [
             '../src/with-plugin-partial.hbs',
             pluginOptions,
             true,
-            null,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+    
+        testTemplate(
+            '../src/partialDirs/with-root-relative-partial.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+    
+        testTemplate(
+            '../src/partialDirs/with-nested-root-relative-partial.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+    
+        testTemplate(
+            '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
+            pluginOptions,
+            true,
         )
     },
     
@@ -143,7 +178,6 @@ const PREPARATIONS = [
             '../src/with-dir-partials.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -155,7 +189,6 @@ const PREPARATIONS = [
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -167,7 +200,6 @@ const PREPARATIONS = [
             '../src/nested-templates/with-parent-dir-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -179,7 +211,6 @@ const PREPARATIONS = [
             '../src/nested-templates/with-cousin-dir-partial.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -191,7 +222,6 @@ const PREPARATIONS = [
             '../src/with-partial-block.hbs',
             pluginOptions,
             true,
-            null,
         )
     },
     
@@ -203,9 +233,183 @@ const PREPARATIONS = [
             '../src/with-inline-partial.hbs',
             pluginOptions,
             true,
-            null,
+        )
+    },
+
+]
+
+const ASSET_RESOLVERS = [
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
+                resolve: false
+            }
+        }
+
+        testTemplate(
+            '../src/with-unresolved-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
+                resolve: true,
+                external: ['src/images/**']
+            }
+        }
+        
+        testTemplate(
+            '../src/with-external-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
+                emit: false,
+                resolve: true
+            }
+        }
+
+        testTemplate(
+            '../src/with-resolved-src-without-emit.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
+                contextPath: 'src'
+            }
+        }
+
+        testTemplate(
+            '../src/with-root-relative-src-asset.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-img-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-link-href.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-audio-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-video-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-source-audio.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-source-video.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-og-image.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-srcset.hbs',
+            pluginOptions,
+            true,
         )
     },
 ]
 
-PREPARATIONS.forEach(func => func())
+HANDLEBARS_OPERATIONS.forEach(func => func())
+ASSET_RESOLVERS.forEach(func => func())

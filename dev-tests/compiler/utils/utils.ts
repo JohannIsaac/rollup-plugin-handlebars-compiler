@@ -10,9 +10,5 @@ export function lookupPartialRegistration(partialName: string, code: string) {
 export function lookupHelperRegistration(helperName: string, code: string) {
     const searchRegex = new RegExp(`Handlebars${ws}\\.registerHelper${ws}\\(${ws}${q}${helperName}${ws}${q}`)
     const result = searchRegex.test(code)
-    if (helperName === 'description') {
-        console.log(result, searchRegex)
-        console.log(code)
-    }
     return result
 }

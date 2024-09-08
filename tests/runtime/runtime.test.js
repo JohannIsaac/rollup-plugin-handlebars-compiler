@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { removeTestResultsDir, testTemplate } from './utils';
+import { testTemplate } from './utils';
 
 const TEST_TEMPLATE_DATA = {
     title: "Title",
@@ -11,9 +11,7 @@ const TEST_TEMPLATE_DATA = {
     object: { a: "a", b: "b", c: "c" },
 }
 
-// removeTestResultsDir()
-
-describe('handlebars rutime', () => {
+describe('Handlebars Runtime', () => {
 
     it('should render simple handleabrs template', async () => {
         await testTemplate(
@@ -52,8 +50,8 @@ describe('handlebars rutime', () => {
             '../src/with-known-helpers.hbs',
             {},
             async (err, output) => {
-                const catchOutput = output.includes("some known helper")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("some known helper")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -64,8 +62,8 @@ describe('handlebars rutime', () => {
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 if (err) console.error(err && err.message)
-                const catchOutput = output.includes("Description Description")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("Description Description")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -106,8 +104,44 @@ describe('handlebars rutime', () => {
             '../src/with-plugin-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>another: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow partials to find root relative', async () => {
+
+        await testTemplate(
+            '../src/partialDirs/with-root-relative-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow nested partials to find root relative', async () => {
+
+        await testTemplate(
+            '../src/partialDirs/with-nested-root-relative-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should allow relative path partial to nest root relative partials', async () => {
+
+        await testTemplate(
+            '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
+            TEST_TEMPLATE_DATA,
+            async (err, output) => {
+                const captureOutput = output.includes("<p>Other: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -131,8 +165,8 @@ describe('handlebars rutime', () => {
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -142,8 +176,8 @@ describe('handlebars rutime', () => {
             '../src/nested-templates/with-parent-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -153,8 +187,8 @@ describe('handlebars rutime', () => {
             '../src/nested-templates/with-cousin-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>another: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -164,8 +198,8 @@ describe('handlebars rutime', () => {
             '../src/with-partial-block.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<div>Failover</div>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<div>Failover</div>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -175,8 +209,8 @@ describe('handlebars rutime', () => {
             '../src/with-inline-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("Foo")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("Foo")
+                expect(captureOutput).toBe(true)
             }
         )
     })
