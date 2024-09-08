@@ -27562,6 +27562,8 @@ function extractAssets(params) {
             var node = assetNodes_1_1.value;
             var assetTagData = getAssetTagData(node);
             var _loop_1 = function (sourcePath) {
+                var newAssetTagData = Object.assign({}, assetTagData);
+                newAssetTagData.paths = [sourcePath];
                 sourcePath = sourcePath.trim();
                 if (isExternal(sourcePath))
                     return "continue";
@@ -27584,7 +27586,7 @@ function extractAssets(params) {
                         throw new Error("Could not find ".concat(filePath, " referenced from HTML file ").concat(params.htmlFilePath, " from element ").concat(elStr, "."));
                     }
                     var content = fs.readFileSync(filePath);
-                    allAssets.push({ filePath: filePath, outputFilePath: outputFilePath, hashed: hashed, content: content, assetTagData: assetTagData });
+                    allAssets.push({ filePath: filePath, outputFilePath: outputFilePath, hashed: hashed, content: content, assetTagData: newAssetTagData });
                 }
             };
             try {
@@ -27636,9 +27638,9 @@ function extractModulesAndAssets(params) {
 
 var ROOT_PATH_KEY = '__ROOT__/';
 // Regex for whitespace in group
-var g_ws = "\\r|\\n|\\s";
+var gws = '\\r|\\n|\\s';
 // Regex for whitespace in character class
-var c_ws = "\\r\\n\\s";
+var cws = '\\r\\n\\s';
 var StatementsProcessor = /** @class */ (function () {
     function StatementsProcessor(templateData, handlebarsPluginOptions) {
         if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
@@ -27649,7 +27651,7 @@ var StatementsProcessor = /** @class */ (function () {
         this.assets = processResult.assets;
     }
     StatementsProcessor.renameAllRootPathPartials = function (source) {
-        return source.replaceAll(new RegExp("(\\{\\{#?>(".concat(g_ws, ")*)\\/"), 'gms'), "$1".concat(ROOT_PATH_KEY));
+        return source.replaceAll(new RegExp("(\\{\\{#?>(".concat(gws, ")*)\\/"), 'gms'), "$1".concat(ROOT_PATH_KEY));
     };
     // Recursive function for getting nested partials with pathname
     StatementsProcessor.prototype.processStatements = function (templateData, partialsMap, helpersMap, assetsMap) {
@@ -27836,7 +27838,7 @@ var StatementsProcessor = /** @class */ (function () {
     StatementsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
         var extname = path.extname(resolvedPartialPath);
         var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
-        source = source.replaceAll(new RegExp("(\\{\\{#?>(".concat(g_ws, ")*)(").concat(fromName, ")(?=[").concat(c_ws, "\\}])"), 'gms'), "$1".concat(resolvedPartialName));
+        source = source.replaceAll(new RegExp("(\\{\\{#?>(".concat(gws, ")*)(").concat(fromName, ")(?=[").concat(cws, "\\}])"), 'gms'), "$1".concat(resolvedPartialName));
         return source;
     };
     // Rewrite the original source to be passed to final source map
@@ -27844,7 +27846,7 @@ var StatementsProcessor = /** @class */ (function () {
         var extname = path.extname(resolvedHelperPath);
         var resolvedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp("".concat(extname, "$")), '');
         resolvedHelperName = this.escapePathName(resolvedHelperName);
-        source = source.replaceAll(new RegExp("(\\{\\{(?:".concat(g_ws, ")*)(\\[?)").concat(fromName, "(\\]?)(?=[").concat(c_ws, "\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
+        source = source.replaceAll(new RegExp("(\\{\\{(?:".concat(gws, ")*)(\\[?)").concat(fromName, "(\\]?)(?=[").concat(cws, "\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
         return source;
     };
     // Rewrite the original source to be passed to final source map
@@ -27860,10 +27862,11 @@ var StatementsProcessor = /** @class */ (function () {
             for (var paths_1 = __values(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
                 var path_1 = paths_1_1.value;
                 path_1 = path_1.trim();
+                path_1 = path_1.replaceAll('.', '\\.');
                 try {
                     for (var attributes_1 = (e_2 = void 0, __values(attributes)), attributes_1_1 = attributes_1.next(); !attributes_1_1.done; attributes_1_1 = attributes_1.next()) {
                         var attr = attributes_1_1.value;
-                        source = source.replaceAll(new RegExp("\\b(".concat(attr, "(?:").concat(g_ws, ")*=(?:").concat(g_ws, ")*\"(?:").concat(g_ws, ")*[^\"]*?)(").concat(path_1, "\\b(,?))"), 'gms'), "$1".concat(resolvedPath, "$3"));
+                        source = source.replaceAll(new RegExp("\\b(".concat(attr, "(?:").concat(gws, ")*=(?:").concat(gws, ")*\"(?:").concat(gws, ")*[^\"]*?)(").concat(path_1, "\\b(,?))"), 'gms'), "$1".concat(resolvedPath, "$3"));
                     }
                 }
                 catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -33827,6 +33830,7 @@ function getPluginOptions(handlebarsPluginOptions) {
     if (!handlebarsPluginOptions.assets || typeof handlebarsPluginOptions.assets !== 'object') {
         handlebarsPluginOptions.assets = {};
     }
+    // If neither assets.emit or assets.resolved are defined, always resolve and emit assets
     if (typeof handlebarsPluginOptions.assets.emit === 'undefined' &&
         typeof handlebarsPluginOptions.assets.resolve === 'undefined') {
         handlebarsPluginOptions.assets = Object.assign({}, defaultHandlebarsOptions.assets, handlebarsPluginOptions.assets);
@@ -33874,7 +33878,6 @@ function testTemplate(template, pluginOptions, toOutputFiles, testFn) {
         return;
     }
     var processedOptions = getPluginOptions(pluginOptions);
-    console.log(processedOptions);
     var output = null;
     try {
         var hbsTransformer = new HandlebarsTransformer(processedOptions, source, templatePath);
@@ -34089,6 +34092,20 @@ var ASSET_RESOLVERS = [
             pluginOptions = {
                 rootDir: path.join(__dirname$1, '../'),
                 assets: {
+                    emit: false,
+                    resolve: true
+                }
+            };
+            testTemplate('../src/with-resolved-src-without-emit.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+                assets: {
                     contextPath: 'src'
                 }
             };
@@ -34163,6 +34180,16 @@ var ASSET_RESOLVERS = [
                 rootDir: path.join(__dirname$1, '../'),
             };
             testTemplate('../src/with-og-image.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-srcset.hbs', pluginOptions);
             return [2 /*return*/];
         });
     }); },

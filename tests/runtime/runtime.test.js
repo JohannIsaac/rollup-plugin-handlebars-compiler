@@ -11,7 +11,7 @@ const TEST_TEMPLATE_DATA = {
     object: { a: "a", b: "b", c: "c" },
 }
 
-describe('handlebars rutime', () => {
+describe('Handlebars Runtime', () => {
 
     it('should render simple handleabrs template', async () => {
         await testTemplate(

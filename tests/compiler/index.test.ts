@@ -3,7 +3,8 @@ import path from 'path';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index';
 import { lookupHelperRegistration, lookupPartialRegistration } from './utils/utils';
-import { testTemplate } from './helpers';
+import { testEmitAssets, testTemplate } from './helpers';
+import { getPluginOptions } from '../../lib/index';
 
 describe('Handlebars Plugin Compiler', () => {
 
@@ -312,6 +313,27 @@ describe('Handlebars Plugin Compiler', () => {
             )
         })
         
+        it('should resolve src assets without emitting', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+                assets: {
+                    emit: false,
+                    resolve: true
+                }
+            }
+    
+            testTemplate(
+                '../src/with-resolved-src-without-emit.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const catchOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
+                    expect(catchOutput).toBe(true)
+                }
+            )
+        })
+        
         it('should be able to use root relative paths for assets', async () => {
     
             const pluginOptions: HandlebarsPluginOptions = {
@@ -356,7 +378,7 @@ describe('Handlebars Plugin Compiler', () => {
             }
     
             testTemplate(
-                '../src/with-link-rel.hbs',
+                '../src/with-link-href.hbs',
                 pluginOptions,
                 false,
                 async (err, output) => {
@@ -447,6 +469,250 @@ describe('Handlebars Plugin Compiler', () => {
                 async (err, output) => {
                     const catchOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
                     expect(catchOutput).toBe(true)
+                }
+            )
+        })
+    
+        it('should resolve multiple assets in srcset', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testTemplate(
+                '../src/with-srcset.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    console.log(output)
+                    const catchOutput1 = output?.code.match(/\W\/src\/images\/nested\/handlebars\.png,?/)
+                    console.log(catchOutput1)
+                    const catchOutput2 = output?.code.match(/\W\/src\/images\/nested\/handlebars\.webp,?/)
+                    console.log(catchOutput2)
+                    expect(catchOutput1).toBeTruthy()
+                    expect(catchOutput2).toBeTruthy()
+                }
+            )
+        })
+
+    })
+
+
+
+    describe('Asset Emmiters', () => {
+
+        
+        it('should be able to force resolve assets to false', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+                assets: {
+                    resolve: false
+                }
+            }
+    
+            testEmitAssets(
+                '../src/with-img-src.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+        
+        it('should resolve src assets without emitting', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+                assets: {
+                    emit: false,
+                    resolve: true
+                }
+            }
+
+            const processedOptions = getPluginOptions(pluginOptions)
+            const output = processedOptions?.assets?.emit
+            expect(output).toBeFalsy()
+        })
+        
+        it('should be able to emit assets using root relative paths', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+                assets: {
+                    contextPath: 'src'
+                }
+            }
+    
+            testEmitAssets(
+                '../src/with-root-relative-src-asset.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath?.startsWith('/images')).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+        
+        it('should emit img src assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-img-src.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit link href assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+            
+            testEmitAssets(
+                '../src/with-link-href.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit audio src assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-audio-src.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit video src assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-video-src.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit source src audio assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-source-audio.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit source src video assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-source-video.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit opengraph image content assets', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-og-image.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData = [...output?.values()][0]
+                    expect(fileData?.filePath).toBeTruthy()
+                    expect(fileData?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData?.content)).toBeTruthy()
+                }
+            )
+        })
+    
+        it('should emit multiple assets in srcset', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+            }
+    
+            testEmitAssets(
+                '../src/with-srcset.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const fileData1 = [...output?.values()][0]
+                    expect(fileData1?.filePath).toBeTruthy()
+                    expect(fileData1?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData1?.content)).toBeTruthy()
+                    const fileData2 = [...output?.values()][1]
+                    expect(fileData2?.filePath).toBeTruthy()
+                    expect(fileData2?.outputFilePath).toBeTruthy()
+                    expect(ArrayBuffer.isView(fileData2?.content)).toBeTruthy()
                 }
             )
         })

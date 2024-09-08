@@ -22,6 +22,7 @@ export function getPluginOptions(handlebarsPluginOptions: HandlebarsPluginOption
 		handlebarsPluginOptions.assets = {}
 	}
 	
+	// If neither assets.emit or assets.resolved are defined, always resolve and emit assets
 	if (
 		typeof handlebarsPluginOptions.assets.emit === 'undefined' &&
 		typeof handlebarsPluginOptions.assets.resolve === 'undefined'

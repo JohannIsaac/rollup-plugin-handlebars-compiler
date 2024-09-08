@@ -261,6 +261,23 @@ const ASSET_RESOLVERS = [
         const pluginOptions: HandlebarsPluginOptions = {
             rootDir: path.join(__dirname, '../'),
             assets: {
+                emit: false,
+                resolve: true
+            }
+        }
+
+        testTemplate(
+            '../src/with-resolved-src-without-emit.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
                 contextPath: 'src'
             }
         }
@@ -358,6 +375,19 @@ const ASSET_RESOLVERS = [
 
         testTemplate(
             '../src/with-og-image.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-srcset.hbs',
             pluginOptions,
             true,
         )

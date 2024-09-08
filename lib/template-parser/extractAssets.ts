@@ -33,6 +33,8 @@ export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
   for (const node of assetNodes) {
     const assetTagData = getAssetTagData(node);
     for (let sourcePath of assetTagData.paths) {
+      const newAssetTagData = Object.assign({}, assetTagData)
+      newAssetTagData.paths = [sourcePath]
       sourcePath = sourcePath.trim()
       if (isExternal(sourcePath)) continue;
 
@@ -69,7 +71,7 @@ export function extractAssets(params: ExtractAssetsParams): InputAsset[] {
         }
 
         const content = fs.readFileSync(filePath);
-        allAssets.push({ filePath, outputFilePath, hashed, content, assetTagData });
+        allAssets.push({ filePath, outputFilePath, hashed, content, assetTagData: newAssetTagData });
       }
     }
   }

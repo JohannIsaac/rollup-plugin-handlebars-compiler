@@ -5,11 +5,13 @@ import HandlebarsTransformer from '../../lib/handlebars-transformer';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index';
 import { CompileResult } from '../../lib/types/handlebars/index';
+import { AssetsMap } from '../../lib/types/source-map/index';
 import { js_beautify } from 'js-beautify';
 
 import { getPluginOptions } from '../../lib/index'
 
 type TestFn = (err: Error, output: CompileResult) => {}
+type TestEmitFn = (err: Error, output: AssetsMap) => {}
 
 const absoluteTestFunctionsDir = path.join(__dirname, '../runtime/functions')
 export function removeOutputDir() {
@@ -71,5 +73,36 @@ export function testTemplate(template: string, pluginOptions: HandlebarsPluginOp
     if (testFn) testFn(err, output)
 
     if (toOutputFiles) createFunctionFile(template, output)
+
+}
+
+export function testEmitAssets(template: string, pluginOptions: HandlebarsPluginOptions, toOutputFiles: boolean = true, testEmitFn?: TestEmitFn) {
+
+    let err: Error | undefined
+    
+    const templatePath = path.join(__dirname, template)
+    
+    let source: string | null = null
+    try {
+        source = loadTemplate(templatePath)
+    } catch (e) {
+        err = e
+        if (testEmitFn) testEmitFn(err, null)
+        return
+    }
+
+    const processedOptions = getPluginOptions(pluginOptions)
+
+    let output: AssetsMap | null = null
+    try {
+        const hbsTransformer = new HandlebarsTransformer(processedOptions, source, templatePath)
+        output = hbsTransformer.getAssetsMap()
+    } catch (e) {
+        err = e
+    }
+
+    if (testEmitFn) testEmitFn(err, output)
+
+    // if (toOutputFiles) createFunctionFile(template, output)
 
 }
