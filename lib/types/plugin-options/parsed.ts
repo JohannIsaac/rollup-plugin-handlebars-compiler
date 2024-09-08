@@ -1,5 +1,5 @@
-import { CompileOptions } from "../../handlebars-compiler"
-import { FileModule, ImportsData, SourceData } from "../source-map"
+import { CompileOptions } from "../../HandlebarsCompiler"
+import { FileModule, ImportsData, SourceData } from "../SourceMap"
 
 export type Helper = [string, Function]
 

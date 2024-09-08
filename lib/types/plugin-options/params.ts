@@ -12,4 +12,12 @@ export interface IPluginOptions {
     helpers?: Helpers;
     partials?: Partials;
 	templateData?: TemplateData;
+    rootDir?: string;
+    assets?: {
+        resolve?: boolean | null;
+        emit?: boolean | null;
+        contextPath?: string;
+        outputDir?: string;
+        external?: string | string[];
+    }
 }

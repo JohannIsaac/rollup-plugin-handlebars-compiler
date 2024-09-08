@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "declaration": false,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "lib": [
+      "ES2021.String"
+    ],
+    "module": "ES2020"
+  }
+}
