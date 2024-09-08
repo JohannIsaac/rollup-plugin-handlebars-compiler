@@ -7,7 +7,7 @@ const defaultHandlebarsOptions = {
 	rootDir: process.cwd(),
 	assets: {
 		emit: true,
-		resovle: true
+		resolve: true
 	}
 }
 
@@ -20,6 +20,13 @@ export function getPluginOptions(handlebarsPluginOptions: HandlebarsPluginOption
 		
 	if (!handlebarsPluginOptions.assets || typeof handlebarsPluginOptions.assets !== 'object') {
 		handlebarsPluginOptions.assets = {}
+	}
+	
+	if (
+		typeof handlebarsPluginOptions.assets.emit === 'undefined' &&
+		typeof handlebarsPluginOptions.assets.resolve === 'undefined'
+	) {
+		handlebarsPluginOptions.assets = Object.assign({}, defaultHandlebarsOptions.assets, handlebarsPluginOptions.assets)
 	}
 
 	// Always resolve assets if assets.emit is set to true

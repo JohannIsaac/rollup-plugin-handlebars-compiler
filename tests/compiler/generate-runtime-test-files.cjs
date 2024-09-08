@@ -33815,7 +33815,7 @@ var defaultHandlebarsOptions = {
     rootDir: process.cwd(),
     assets: {
         emit: true,
-        resovle: true
+        resolve: true
     }
 };
 function getPluginOptions(handlebarsPluginOptions) {
@@ -33826,6 +33826,10 @@ function getPluginOptions(handlebarsPluginOptions) {
     handlebarsPluginOptions = Object.assign({}, defaultHandlebarsOptions, handlebarsPluginOptions);
     if (!handlebarsPluginOptions.assets || typeof handlebarsPluginOptions.assets !== 'object') {
         handlebarsPluginOptions.assets = {};
+    }
+    if (typeof handlebarsPluginOptions.assets.emit === 'undefined' &&
+        typeof handlebarsPluginOptions.assets.resolve === 'undefined') {
+        handlebarsPluginOptions.assets = Object.assign({}, defaultHandlebarsOptions.assets, handlebarsPluginOptions.assets);
     }
     // Always resolve assets if assets.emit is set to true
     if (handlebarsPluginOptions.assets.emit) {
@@ -33870,6 +33874,7 @@ function testTemplate(template, pluginOptions, toOutputFiles, testFn) {
         return;
     }
     var processedOptions = getPluginOptions(pluginOptions);
+    console.log(processedOptions);
     var output = null;
     try {
         var hbsTransformer = new HandlebarsTransformer(processedOptions, source, templatePath);
@@ -33891,7 +33896,7 @@ var descriptionHelper$1 = /*@__PURE__*/getDefaultExportFromCjs(descriptionHelper
 var filename = url.fileURLToPath((typeof document === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : (_documentCurrentScript && _documentCurrentScript.src || new URL('generate-runtime-test-files.cjs', document.baseURI).href)));
 var __dirname$1 = path.dirname(filename);
 removeOutputDir();
-var PREPARATIONS = [
+var HANDLEBARS_OPERATIONS = [
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
@@ -34063,6 +34068,44 @@ var PREPARATIONS = [
             return [2 /*return*/];
         });
     }); },
+];
+var ASSET_RESOLVERS = [
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+                assets: {
+                    resolve: false
+                }
+            };
+            testTemplate('../src/with-unresolved-src.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+                assets: {
+                    contextPath: 'src'
+                }
+            };
+            testTemplate('../src/with-root-relative-src-asset.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-img-src.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
     function () { return __awaiter(void 0, void 0, void 0, function () {
         var pluginOptions;
         return __generator(this, function (_a) {
@@ -34119,9 +34162,10 @@ var PREPARATIONS = [
             pluginOptions = {
                 rootDir: path.join(__dirname$1, '../'),
             };
-            testTemplate('../src/with-img-src.hbs', pluginOptions);
+            testTemplate('../src/with-og-image.hbs', pluginOptions);
             return [2 /*return*/];
         });
     }); },
 ];
-PREPARATIONS.forEach(function (func) { return func(); });
+HANDLEBARS_OPERATIONS.forEach(function (func) { return func(); });
+ASSET_RESOLVERS.forEach(function (func) { return func(); });

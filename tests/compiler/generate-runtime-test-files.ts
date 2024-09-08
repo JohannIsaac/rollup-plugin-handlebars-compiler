@@ -11,7 +11,8 @@ import descriptionHelper from '../src/helpers-commonjs/descriptionHelper.js';
 
 removeOutputDir()
 
-const PREPARATIONS = [
+const HANDLEBARS_OPERATIONS = [
+
     async () => {
     
         const pluginOptions: HandlebarsPluginOptions = {}
@@ -234,6 +235,55 @@ const PREPARATIONS = [
             true,
         )
     },
+
+]
+
+const ASSET_RESOLVERS = [
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
+                resolve: false
+            }
+        }
+
+        testTemplate(
+            '../src/with-unresolved-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
+                contextPath: 'src'
+            }
+        }
+
+        testTemplate(
+            '../src/with-root-relative-src-asset.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-img-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
     
     async () => {
 
@@ -307,11 +357,12 @@ const PREPARATIONS = [
         }
 
         testTemplate(
-            '../src/with-img-src.hbs',
+            '../src/with-og-image.hbs',
             pluginOptions,
             true,
         )
     },
 ]
 
-PREPARATIONS.forEach(func => func())
+HANDLEBARS_OPERATIONS.forEach(func => func())
+ASSET_RESOLVERS.forEach(func => func())
