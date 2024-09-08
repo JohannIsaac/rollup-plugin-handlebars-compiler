@@ -94,8 +94,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupHelperRegistration('descriptionHelper', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupHelperRegistration('descriptionHelper', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -116,8 +116,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupHelperRegistration('list', output.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupHelperRegistration('list', output.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
     
@@ -136,8 +136,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupPartialRegistration('otherPartial', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupPartialRegistration('otherPartial', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -153,8 +153,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupPartialRegistration('__ROOT__/src/partialDirs/anotherDir/otherPartial', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupPartialRegistration('__ROOT__/src/partialDirs/anotherDir/otherPartial', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -170,8 +170,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupPartialRegistration('__ROOT__/src/partialDirs/anotherDir/otherPartial', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupPartialRegistration('__ROOT__/src/partialDirs/anotherDir/otherPartial', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -220,8 +220,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupPartialRegistration('../../some-partial', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupPartialRegistration('../../some-partial', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -235,8 +235,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupPartialRegistration('../some-partial', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupPartialRegistration('../some-partial', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -250,8 +250,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = lookupPartialRegistration('../partialDirs/anotherDir/otherPartial', output?.code)
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = lookupPartialRegistration('../partialDirs/anotherDir/otherPartial', output?.code)
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -265,8 +265,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("<div>Failover</div>")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("<div>Failover</div>")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -280,8 +280,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("printFoo")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("printFoo")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -307,8 +307,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"./images/nested/handlebars.png")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"./images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -328,8 +328,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -348,8 +348,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/images/nested/handlebars.png")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -365,8 +365,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -382,8 +382,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/styles/bg-red.css")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/styles/bg-red.css")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -399,8 +399,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/audio/audio.mp3")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/audio/audio.mp3")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -416,8 +416,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/video/video.mp4")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/video/video.mp4")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -433,8 +433,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/audio/audio.mp3")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/audio/audio.mp3")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -450,8 +450,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/video/video.mp4")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/video/video.mp4")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })
@@ -467,8 +467,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    const catchOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
-                    expect(catchOutput).toBe(true)
+                    const captureOutput = output?.code.includes("\"/src/images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
                 }
             )
         })

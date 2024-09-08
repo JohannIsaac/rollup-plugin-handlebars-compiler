@@ -50,8 +50,8 @@ describe('Handlebars Runtime', () => {
             '../src/with-known-helpers.hbs',
             {},
             async (err, output) => {
-                const catchOutput = output.includes("some known helper")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("some known helper")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -62,8 +62,8 @@ describe('Handlebars Runtime', () => {
             TEST_TEMPLATE_DATA,
             async (err, output) => {
                 if (err) console.error(err && err.message)
-                const catchOutput = output.includes("Description Description")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("Description Description")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -104,8 +104,8 @@ describe('Handlebars Runtime', () => {
             '../src/with-plugin-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>another: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -116,8 +116,8 @@ describe('Handlebars Runtime', () => {
             '../src/partialDirs/with-root-relative-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>another: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -128,8 +128,8 @@ describe('Handlebars Runtime', () => {
             '../src/partialDirs/with-nested-root-relative-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>another: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -140,8 +140,8 @@ describe('Handlebars Runtime', () => {
             '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>Other: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>Other: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -165,8 +165,8 @@ describe('Handlebars Runtime', () => {
             '../src/nested-templates/nested/with-ancestor-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -176,8 +176,8 @@ describe('Handlebars Runtime', () => {
             '../src/nested-templates/with-parent-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -187,8 +187,8 @@ describe('Handlebars Runtime', () => {
             '../src/nested-templates/with-cousin-dir-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<p>another: Description</p>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<p>another: Description</p>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -198,8 +198,8 @@ describe('Handlebars Runtime', () => {
             '../src/with-partial-block.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("<div>Failover</div>")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("<div>Failover</div>")
+                expect(captureOutput).toBe(true)
             }
         )
     })
@@ -209,8 +209,8 @@ describe('Handlebars Runtime', () => {
             '../src/with-inline-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                const catchOutput = output.includes("Foo")
-                expect(catchOutput).toBe(true)
+                const captureOutput = output.includes("Foo")
+                expect(captureOutput).toBe(true)
             }
         )
     })
