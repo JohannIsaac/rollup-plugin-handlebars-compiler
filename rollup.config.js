@@ -9,7 +9,10 @@ const IS_DEVELOPMENT = process.env.BUILD === 'development'
 
 const CONFIG_TEMPLATE = {
     external: [
-        'handlebars'
+        'handlebars',
+        '@web/parse5-utils',
+        'parse5',
+        'picomatch',
     ],
     input: 'lib/index.ts',
     plugins: [
