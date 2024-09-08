@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-import HandlebarsTransformer from '../../lib/handlebars-transformer';
+import HandlebarsTransformer from '../../lib/HandlebarsTransformer';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
-import { CompileResult } from '../../lib/types/handlebars';
+import { CompileResult } from '../../lib/types/Handlebars';
 import { js_beautify } from 'js-beautify';
 
 type TestFn = (err: Error, output: CompileResult) => {}
@@ -45,8 +45,7 @@ function createFunctionFile(template: string, output: CompileResult) {
 export function testTemplate(template: string, pluginOptions: HandlebarsPluginOptions, toOutputFiles: boolean = true, testFn?: TestFn) {
 
     let err: Error | undefined
-    const hbsTransformer = new HandlebarsTransformer(pluginOptions)
-
+    
     const templatePath = path.join(__dirname, template)
     
     let source: string | null = null
@@ -57,9 +56,11 @@ export function testTemplate(template: string, pluginOptions: HandlebarsPluginOp
         return
     }
 
+    const hbsTransformer = new HandlebarsTransformer(pluginOptions, source, templatePath)
+
     let output: CompileResult | null = null
     try {
-        output = hbsTransformer.transform(source, templatePath)
+        output = hbsTransformer.transform()
     } catch (e) {
         err = e
     }

@@ -4,7 +4,7 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { js_beautify } from 'js-beautify';
 
-import { CompileResult, TemplateSourceMap, TemplateSpecification } from './types/handlebars';
+import { CompileResult, TemplateSourceMap, TemplateSpecification } from './types/Handlebars';
 
 type CompiledData = [string, TemplateSpecification]
 
