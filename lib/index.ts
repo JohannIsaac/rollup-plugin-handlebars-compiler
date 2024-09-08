@@ -1,5 +1,5 @@
 import type { Plugin } from 'rollup';
-import HandlebarsTransformer from './handlebars-transformer';
+import HandlebarsTransformer from './HandlebarsTransformer';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
 

@@ -1,12 +1,12 @@
 import path from 'path';
-import StatementsProcessor, { ROOT_PATH_KEY } from './statements-processor';
+import StatementsProcessor from './StatementsProcessor';
 import pluginOptions from './plugin-options';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
 import { CompileResult } from './types/handlebars';
-import HandlebarsCompiler from './handlebars-compiler';
-import { SourceMap } from './source-map';
-import { ImportsMap } from './imports-map';
+import HandlebarsCompiler from './HandlebarsCompiler';
+import { SourceMap } from './SourceMap';
+import { ImportsMap } from './ImportsMap';
 import { AssetsMap } from './types/source-map';
 
 export default class HandlebarsTransformer {

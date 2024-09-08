@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import HandlebarsTransformer from '../../lib/handlebars-transformer';
+import HandlebarsTransformer from '../../lib/HandlebarsTransformer';
 
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options';
 import { CompileResult } from '../../lib/types/handlebars';

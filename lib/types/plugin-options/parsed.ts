@@ -1,4 +1,4 @@
-import { CompileOptions } from "../../handlebars-compiler"
+import { CompileOptions } from "../../HandlebarsCompiler"
 import { FileModule, ImportsData, SourceData } from "../source-map"
 
 export type Helper = [string, Function]

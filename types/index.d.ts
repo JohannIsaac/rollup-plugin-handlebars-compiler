@@ -36,6 +36,7 @@ interface IPluginOptions {
 interface HandlebarsPluginOptions extends CompileOptions, IPluginOptions {
 }
 
+declare function getPluginOptions(handlebarsPluginOptions?: HandlebarsPluginOptions): HandlebarsPluginOptions;
 declare function handlebarsCompilerPlugin(handlebarsPluginOptions?: HandlebarsPluginOptions): Plugin;
 
-export { handlebarsCompilerPlugin as default };
+export { handlebarsCompilerPlugin as default, getPluginOptions };
