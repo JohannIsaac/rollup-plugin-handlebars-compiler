@@ -242,6 +242,71 @@ const PREPARATIONS = [
         }
 
         testTemplate(
+            '../src/with-link-href.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-audio-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-video-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-source-audio.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-source-video.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
             '../src/with-img-src.hbs',
             pluginOptions,
             true,

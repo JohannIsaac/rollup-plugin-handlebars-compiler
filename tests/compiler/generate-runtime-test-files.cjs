@@ -27405,66 +27405,6 @@ function extractFirstUrlOfSrcSet(node) {
     var urls = getSrcSetUrls(srcset);
     return urls[0];
 }
-function isAsset(node) {
-    var _a, _b, _c, _d, _e, _f, _g;
-    var path = '';
-    switch (getTagName(node)) {
-        case 'img':
-            path = (_a = getAttribute(node, 'src')) !== null && _a !== void 0 ? _a : '';
-            break;
-        case 'source':
-            if (getAttribute(node, 'src')) {
-                path = (_b = getAttribute(node, 'src')) !== null && _b !== void 0 ? _b : '';
-            }
-            else {
-                path = (_c = extractFirstUrlOfSrcSet(node)) !== null && _c !== void 0 ? _c : '';
-            }
-            break;
-        case 'link':
-            if (linkRels.includes((_d = getAttribute(node, 'rel')) !== null && _d !== void 0 ? _d : '')) {
-                path = (_e = getAttribute(node, 'href')) !== null && _e !== void 0 ? _e : '';
-            }
-            break;
-        case 'meta':
-            if (getAttribute(node, 'property') === 'og:image' && getAttribute(node, 'content')) {
-                path = (_f = getAttribute(node, 'content')) !== null && _f !== void 0 ? _f : '';
-            }
-            break;
-        case 'script':
-            if (getAttribute(node, 'type') !== 'module' && getAttribute(node, 'src')) {
-                path = (_g = getAttribute(node, 'src')) !== null && _g !== void 0 ? _g : '';
-            }
-            break;
-        default:
-            return false;
-    }
-    if (!path) {
-        return false;
-    }
-    try {
-        new URL(path);
-        return false;
-    }
-    catch (e) {
-        return true;
-    }
-}
-function isHashedAsset(node) {
-    switch (getTagName(node)) {
-        case 'img':
-            return true;
-        case 'source':
-            return true;
-        case 'script':
-            return true;
-        case 'link':
-            return hashedLinkRels.includes(getAttribute(node, 'rel'));
-        case 'meta':
-            return true;
-        default:
-            return false;
-    }
-}
 function resolveAssetFilePath(browserPath, htmlDir, projectRootDir, absolutePathPrefix) {
     var _browserPath = absolutePathPrefix && browserPath[0] === '/'
         ? '/' + path.posix.relative(absolutePathPrefix, browserPath)
@@ -27486,6 +27426,12 @@ function getSourceAttribute(node) {
         case 'img': {
             return 'src';
         }
+        case 'audio': {
+            return 'src';
+        }
+        case 'video': {
+            return 'src';
+        }
         case 'source': {
             return getAttribute(node, 'src') ? 'src' : 'srcset';
         }
@@ -27504,11 +27450,84 @@ function getSourceAttribute(node) {
 }
 var sourceAttributesByTag = {
     'img': ['src'],
+    'audio': ['src'],
+    'video': ['src'],
     'source': ['src', 'srcset'],
     'link': ['href'],
     'script': ['src'],
     'meta': ['content'],
 };
+function isAsset(node) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var path = '';
+    var tagName = getTagName(node);
+    switch (tagName) {
+        case 'img':
+            path = (_a = getAttribute(node, 'src')) !== null && _a !== void 0 ? _a : '';
+            break;
+        case 'audio':
+            path = (_b = getAttribute(node, 'src')) !== null && _b !== void 0 ? _b : '';
+            break;
+        case 'video':
+            path = (_c = getAttribute(node, 'src')) !== null && _c !== void 0 ? _c : '';
+            break;
+        case 'source':
+            if (getAttribute(node, 'src')) {
+                path = (_d = getAttribute(node, 'src')) !== null && _d !== void 0 ? _d : '';
+            }
+            else {
+                path = (_e = extractFirstUrlOfSrcSet(node)) !== null && _e !== void 0 ? _e : '';
+            }
+            break;
+        case 'link':
+            if (linkRels.includes((_f = getAttribute(node, 'rel')) !== null && _f !== void 0 ? _f : '')) {
+                path = (_g = getAttribute(node, 'href')) !== null && _g !== void 0 ? _g : '';
+            }
+            break;
+        case 'meta':
+            if (getAttribute(node, 'property') === 'og:image' && getAttribute(node, 'content')) {
+                path = (_h = getAttribute(node, 'content')) !== null && _h !== void 0 ? _h : '';
+            }
+            break;
+        case 'script':
+            if (getAttribute(node, 'type') !== 'module' && getAttribute(node, 'src')) {
+                path = (_j = getAttribute(node, 'src')) !== null && _j !== void 0 ? _j : '';
+            }
+            break;
+        default:
+            return false;
+    }
+    if (!path) {
+        return false;
+    }
+    try {
+        new URL(path);
+        return false;
+    }
+    catch (e) {
+        return true;
+    }
+}
+function isHashedAsset(node) {
+    switch (getTagName(node)) {
+        case 'img':
+            return true;
+        case 'audio':
+            return true;
+        case 'video':
+            return true;
+        case 'source':
+            return true;
+        case 'script':
+            return true;
+        case 'link':
+            return hashedLinkRels.includes(getAttribute(node, 'rel'));
+        case 'meta':
+            return true;
+        default:
+            return false;
+    }
+}
 function getAssetTagData(node) {
     var key = getSourceAttribute(node);
     var tagName = getTagName(node);
@@ -34041,6 +34060,56 @@ var PREPARATIONS = [
         return __generator(this, function (_a) {
             pluginOptions = {};
             testTemplate('../src/with-inline-partial.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-link-href.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-audio-src.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-video-src.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-source-audio.hbs', pluginOptions);
+            return [2 /*return*/];
+        });
+    }); },
+    function () { return __awaiter(void 0, void 0, void 0, function () {
+        var pluginOptions;
+        return __generator(this, function (_a) {
+            pluginOptions = {
+                rootDir: path.join(__dirname$1, '../'),
+            };
+            testTemplate('../src/with-source-video.hbs', pluginOptions);
             return [2 /*return*/];
         });
     }); },

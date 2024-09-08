@@ -28,10 +28,90 @@ function extractFirstUrlOfSrcSet(node: Element) {
 	return urls[0];
 }
 
+export function resolveAssetFilePath(
+	browserPath: string,
+	htmlDir: string,
+	projectRootDir: string,
+	absolutePathPrefix?: string,
+) {
+	const _browserPath =
+		absolutePathPrefix && browserPath[0] === '/'
+			? '/' + path.posix.relative(absolutePathPrefix, browserPath)
+			: browserPath;
+	// const fileDir = partialIsRootRelative ? path.relative(projectRootDir, htmlDir)
+	return path.join(
+		_browserPath.startsWith('/') ? projectRootDir : htmlDir,
+		_browserPath.split('/').join(path.sep),
+	);
+}
+
+export function resolveOutputPathFromRoot(
+	browserPath: string,
+	partialIsRootRelative: boolean,
+	htmlDir: string,
+	partialDir: string,
+	projectRootDir: string,
+	contextPath?: string,
+	outputDir?: string
+) {
+	const absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath)
+	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/')
+	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
+	const strippedOutputDir = outputDir && path.normalize(outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
+	const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
+	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
+	return _resolvedPathFromRoot
+}
+
+export function getSourceAttribute(node: Element) {
+	switch (getTagName(node)) {
+		case 'img': {
+			return 'src';
+		}
+		case 'audio': {
+			return 'src';
+		}
+		case 'video': {
+			return 'src';
+		}
+		case 'source': {
+			return getAttribute(node, 'src') ? 'src' : 'srcset';
+		}
+		case 'link': {
+			return 'href';
+		}
+		case 'script': {
+			return 'src';
+		}
+		case 'meta': {
+			return 'content';
+		}
+		default:
+			throw new Error(`Unknown node with tagname ${getTagName(node)}`);
+	}
+}
+
+export const sourceAttributesByTag = {
+	'img': ['src'],
+	'audio': ['src'],
+	'video': ['src'],
+	'source': ['src', 'srcset'],
+	'link': ['href'],
+	'script': ['src'],
+	'meta': ['content'],
+}
+
 function isAsset(node: Element) {
 	let path = '';
-	switch (getTagName(node)) {
+	const tagName = getTagName(node)
+	switch (tagName) {
 		case 'img':
+			path = getAttribute(node, 'src') ?? '';
+			break;
+		case 'audio':
+			path = getAttribute(node, 'src') ?? '';
+			break;
+		case 'video':
 			path = getAttribute(node, 'src') ?? '';
 			break;
 		case 'source':
@@ -74,6 +154,10 @@ export function isHashedAsset(node: Element) {
 	switch (getTagName(node)) {
 		case 'img':
 			return true;
+		case 'audio':
+			return true;
+		case 'video':
+			return true;
 		case 'source':
 			return true;
 		case 'script':
@@ -85,71 +169,6 @@ export function isHashedAsset(node: Element) {
 		default:
 			return false;
 	}
-}
-
-export function resolveAssetFilePath(
-	browserPath: string,
-	htmlDir: string,
-	projectRootDir: string,
-	absolutePathPrefix?: string,
-) {
-	const _browserPath =
-		absolutePathPrefix && browserPath[0] === '/'
-			? '/' + path.posix.relative(absolutePathPrefix, browserPath)
-			: browserPath;
-	// const fileDir = partialIsRootRelative ? path.relative(projectRootDir, htmlDir)
-	return path.join(
-		_browserPath.startsWith('/') ? projectRootDir : htmlDir,
-		_browserPath.split('/').join(path.sep),
-	);
-}
-
-export function resolveOutputPathFromRoot(
-	browserPath: string,
-	partialIsRootRelative: boolean,
-	htmlDir: string,
-	partialDir: string,
-	projectRootDir: string,
-	contextPath?: string,
-	outputDir?: string
-) {
-	const absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath)
-	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/')
-	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
-	const strippedOutputDir = outputDir && path.normalize(outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
-	const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
-	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
-	return _resolvedPathFromRoot
-}
-
-export function getSourceAttribute(node: Element) {
-	switch (getTagName(node)) {
-		case 'img': {
-			return 'src';
-		}
-		case 'source': {
-			return getAttribute(node, 'src') ? 'src' : 'srcset';
-		}
-		case 'link': {
-			return 'href';
-		}
-		case 'script': {
-			return 'src';
-		}
-		case 'meta': {
-			return 'content';
-		}
-		default:
-			throw new Error(`Unknown node with tagname ${getTagName(node)}`);
-	}
-}
-
-export const sourceAttributesByTag = {
-	'img': ['src'],
-	'source': ['src', 'srcset'],
-	'link': ['href'],
-	'script': ['src'],
-	'meta': ['content'],
 }
 
 export function getAssetTagData(node: Element): AssetTagData {

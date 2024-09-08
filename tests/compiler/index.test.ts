@@ -289,6 +289,91 @@ describe('Handlebars Compiler', () => {
         )
     })
 
+    it('should resolve link href assets', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-link-rel.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput = output?.code.includes("/src/styles/bg-red.css")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should resolve audio src assets', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-audio-src.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput = output?.code.includes("/src/audio/audio.mp3")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should resolve video src assets', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-video-src.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput = output?.code.includes("/src/video/video.mp4")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should resolve source src audio assets', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-source-audio.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput = output?.code.includes("/src/audio/audio.mp3")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
+    it('should resolve source src video assets', async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+        }
+
+        testTemplate(
+            '../src/with-source-video.hbs',
+            pluginOptions,
+            false,
+            async (err, output) => {
+                const catchOutput = output?.code.includes("/src/video/video.mp4")
+                expect(catchOutput).toBe(true)
+            }
+        )
+    })
+
     it('should resolve img src assets', async () => {
 
         const pluginOptions: HandlebarsPluginOptions = {
@@ -300,8 +385,8 @@ describe('Handlebars Compiler', () => {
             pluginOptions,
             false,
             async (err, output) => {
-                // const catchOutput = output?.code.includes("/src/images/nested/handlebars.png")
-                // expect(catchOutput).toBe(true)
+                const catchOutput = output?.code.includes("/src/images/nested/handlebars.png")
+                expect(catchOutput).toBe(true)
             }
         )
     })
