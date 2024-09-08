@@ -79,7 +79,7 @@ export default class HandlebarsCompiler {
 		const code = this.getTemplateSpecs(file) as TemplateSourceMap
 
 		// Import this (partial) template and nested templates
-		let body = `
+		const body = `
 			import Handlebars from 'handlebars/runtime.js';
 			${this.imports.map(([moduleName, importPath]) => `import ${moduleName} from '${importPath}'`).join('\n')}
 			${this.helpers.map(([helper, fn]) => `Handlebars.registerHelper('${helper}', ${fn});`).join('\n')}
