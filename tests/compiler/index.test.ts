@@ -484,11 +484,8 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    console.log(output)
                     const catchOutput1 = output?.code.match(/\W\/src\/images\/nested\/handlebars\.png,?/)
-                    console.log(catchOutput1)
                     const catchOutput2 = output?.code.match(/\W\/src\/images\/nested\/handlebars\.webp,?/)
-                    console.log(catchOutput2)
                     expect(catchOutput1).toBeTruthy()
                     expect(catchOutput2).toBeTruthy()
                 }

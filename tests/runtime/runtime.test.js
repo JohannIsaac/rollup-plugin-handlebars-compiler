@@ -94,7 +94,6 @@ describe('Handlebars Runtime', () => {
                 const catchOutput4 = output.includes('<li>Alan Johnson</li>')
                 const catchOutput5 = output.includes('</ul>')
                 const result = catchOutput1 && catchOutput2 && catchOutput3 && catchOutput4 && catchOutput5
-                console.log(result)
                 expect(result).toBe(true)
             }
         )
@@ -141,8 +140,6 @@ describe('Handlebars Runtime', () => {
             '../src/partialDirs/with-nested-root-and-nonroot-relative-partial.hbs',
             TEST_TEMPLATE_DATA,
             async (err, output) => {
-                console.error(err)
-                console.log(output)
                 const catchOutput = output.includes("<p>Other: Description</p>")
                 expect(catchOutput).toBe(true)
             }
