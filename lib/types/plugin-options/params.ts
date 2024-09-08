@@ -17,6 +17,7 @@ export interface IPluginOptions {
         resolve?: boolean | null;
         emit?: boolean | null;
         contextPath?: string;
-        outputDir?: string
+        outputDir?: string;
+        external?: string | string[];
     }
 }

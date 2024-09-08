@@ -4,9 +4,9 @@ import Handlebars from 'handlebars';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
 import type { AssetsMap, PathMap, SourceDataMap } from './types/SourceMap';
-import { extractModulesAndAssets } from './template-parser/extractModulesAndAssets';
-import { InputAsset } from './template-parser/InputData';
-import { sourceAttributesByTag } from './template-parser/utils';
+import { InputAsset } from './types/AssetsExtractor';
+import { sourceAttributesByTag } from './AssetsExtractor/utils';
+import { AssetsExtractor } from './AssetsExtractor';
 
 export const ROOT_PATH_KEY = '__ROOT__/'
 
@@ -119,21 +119,21 @@ export default class StatementsProcessor {
 	}
 
 	private getAllAssets(templateData: TemplateData) {
-		const partialIsRootRelative = templateData.name.startsWith(ROOT_PATH_KEY)
-		const rootDir = partialIsRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile)
-		const templateName = partialIsRootRelative ? templateData.name.replace(ROOT_PATH_KEY, '') : templateData.name
+
+		const isRootRelative = templateData.name.startsWith(ROOT_PATH_KEY)
+		const rootDir = isRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile)
+		const templateName = isRootRelative ? templateData.name.replace(ROOT_PATH_KEY, '') : templateData.name
 		const absoluteTemplatePath = path.join(rootDir, templateName)
-		const resolvePath = this.handlebarsPluginOptions.assets.resolve
-		return extractModulesAndAssets({
-			partialIsRootRelative,
-			resolvePath,
-			template: templateData.source,
-			templateFilepath: absoluteTemplatePath,
-			partialPath: templateName,
-			rootDir: this.handlebarsPluginOptions.rootDir,
-			contextPath: this.handlebarsPluginOptions.assets.contextPath,
-			outputDir: this.handlebarsPluginOptions.assets.outputDir
-		})
+
+		const extractor = new AssetsExtractor({
+			isRootRelative,
+			source: templateData.source,
+			absolutePath: absoluteTemplatePath,
+			relativePath: templateName
+		}, this.handlebarsPluginOptions)
+		const assetList = extractor.getAssetsList()
+		return assetList
+
 	}
 
 	// Process a partial then recursively process further nested partials

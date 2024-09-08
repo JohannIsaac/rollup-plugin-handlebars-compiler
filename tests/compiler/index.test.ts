@@ -4,7 +4,7 @@ import path from 'path';
 import { HandlebarsPluginOptions } from '../../lib/types/plugin-options/index';
 import { lookupHelperRegistration, lookupPartialRegistration } from './utils/utils';
 import { testEmitAssets, testTemplate } from './helpers';
-import { getPluginOptions } from '../../lib/index';
+import { getPluginOptions } from '../../lib/plugin-options';
 
 describe('Handlebars Plugin Compiler', () => {
 
@@ -291,7 +291,6 @@ describe('Handlebars Plugin Compiler', () => {
 
 
     describe('Asset Resolvers', () => {
-
         
         it('should be able to force resolve assets to false', async () => {
     
@@ -304,6 +303,27 @@ describe('Handlebars Plugin Compiler', () => {
     
             testTemplate(
                 '../src/with-img-src.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    const captureOutput = output?.code.includes("\"./images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
+                }
+            )
+        })
+
+        it('should be able to set external assets by glob in the plugin options', async () => {
+
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+                assets: {
+                    resolve: true,
+                    external: ['src/images/**']
+                }
+            }
+            
+            testTemplate(
+                '../src/with-external-src.hbs',
                 pluginOptions,
                 false,
                 async (err, output) => {
@@ -369,7 +389,6 @@ describe('Handlebars Plugin Compiler', () => {
                 pluginOptions,
                 false,
                 async (err, output) => {
-                    console.log(output)
                     const captureOutput = output?.code.includes("\"/assets/images/nested/handlebars.png")
                     expect(captureOutput).toBe(true)
                 }

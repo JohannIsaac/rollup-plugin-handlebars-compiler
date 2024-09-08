@@ -1,4 +1,4 @@
-import { InputAsset } from "../../template-parser/InputData"
+import { InputAsset } from "../AssetsExtractor"
 
 export type SourceFile = string
 type AbsoluteSourceFile = SourceFile

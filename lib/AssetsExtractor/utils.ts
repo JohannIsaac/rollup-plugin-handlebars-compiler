@@ -3,7 +3,7 @@ import picomatch from 'picomatch';
 import { findElements, getTagName, getAttribute } from '@web/parse5-utils';
 
 import { Document, Element } from 'parse5/dist/tree-adapters/default.js';
-import { AssetTagData } from './InputData';
+import { AssetTagData } from '../types/AssetsExtractor';
 
 const hashedLinkRels = ['stylesheet'];
 const linkRels = [...hashedLinkRels, 'icon', 'manifest', 'apple-touch-icon', 'mask-icon'];
@@ -26,6 +26,17 @@ function extractFirstUrlOfSrcSet(node: Element) {
 	}
 	const urls = getSrcSetUrls(srcset);
 	return urls[0];
+}
+
+export function resolveAssetFilepath(
+	browserPath: string,
+	templateDir: string,
+	projectRootDir: string
+) {
+	return path.join(
+		browserPath.startsWith('/') ? projectRootDir : templateDir,
+		browserPath.split('/').join(path.sep),
+	);
 }
 
 function getSourceAttribute(node: Element) {
@@ -54,16 +65,6 @@ function getSourceAttribute(node: Element) {
 		default:
 			throw new Error(`Unknown node with tagname ${getTagName(node)}`);
 	}
-}
-
-export const sourceAttributesByTag = {
-	'img': ['src'],
-	'audio': ['src'],
-	'video': ['src'],
-	'source': ['src', 'srcset'],
-	'link': ['href'],
-	'script': ['src'],
-	'meta': ['content'],
 }
 
 function isAsset(node: Element) {
@@ -115,6 +116,34 @@ function isAsset(node: Element) {
 	}
 }
 
+export function resolveOutputPathFromRoot(
+	browserPath: string,
+	partialIsRootRelative: boolean,
+	templateDir: string,
+	partialDir: string,
+	projectRootDir: string,
+	contextPath?: string,
+	outputDir?: string
+) {
+	const absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(templateDir, partialDir, browserPath)
+	const _browserPath = browserPath.startsWith('/') ? browserPath : '/' + path.relative(projectRootDir, absoluteFilepath).replaceAll('\\', '/')
+	const strippedRootDir = contextPath && path.normalize(contextPath.replace(/\/$/, '')).replaceAll('\\', '/')
+	const strippedOutputDir = outputDir && path.normalize(outputDir.replace(/\/$/, '')).replaceAll('\\', '/')
+	const parsedOutputDir = strippedOutputDir ? `${strippedOutputDir}/` : ''
+	const _resolvedPathFromRoot = strippedRootDir ? _browserPath.replace(new RegExp(`^/${strippedRootDir}/`), `/${parsedOutputDir}`) : _browserPath
+	return _resolvedPathFromRoot
+}
+
+export const sourceAttributesByTag = {
+	'img': ['src'],
+	'audio': ['src'],
+	'video': ['src'],
+	'source': ['src', 'srcset'],
+	'link': ['href'],
+	'script': ['src'],
+	'meta': ['content'],
+}
+
 export function isHashedAsset(node: Element) {
 	switch (getTagName(node)) {
 		case 'img':
@@ -153,7 +182,7 @@ export function getAssetTagData(node: Element): AssetTagData {
 	return { paths, tagName, attr: key };
 }
 
-export function findAssets(document: Document): Element[] {
+export function findAssets(document: Document) {
 	return findElements(document, isAsset);
 }
 

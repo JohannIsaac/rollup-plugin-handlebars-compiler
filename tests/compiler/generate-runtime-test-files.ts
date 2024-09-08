@@ -261,6 +261,23 @@ const ASSET_RESOLVERS = [
         const pluginOptions: HandlebarsPluginOptions = {
             rootDir: path.join(__dirname, '../'),
             assets: {
+                resolve: true,
+                external: ['src/images/**']
+            }
+        }
+        
+        testTemplate(
+            '../src/with-external-src.hbs',
+            pluginOptions,
+            true,
+        )
+    },
+    
+    async () => {
+
+        const pluginOptions: HandlebarsPluginOptions = {
+            rootDir: path.join(__dirname, '../'),
+            assets: {
                 emit: false,
                 resolve: true
             }

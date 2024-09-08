@@ -8,7 +8,7 @@ import { CompileResult } from '../../lib/types/Handlebars/index';
 import { AssetsMap } from '../../lib/types/SourceMap/index';
 import { js_beautify } from 'js-beautify';
 
-import { getPluginOptions } from '../../lib/index'
+import { getPluginOptions } from '../../lib/plugin-options'
 
 type TestFn = (err: Error, output: CompileResult) => {}
 type TestEmitFn = (err: Error, output: AssetsMap) => {}
