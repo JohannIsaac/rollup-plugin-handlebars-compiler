@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var path = require('path');
 var fs = require('fs');
 var Handlebars = require('handlebars');
@@ -19136,66 +19138,6 @@ function extractFirstUrlOfSrcSet(node) {
     var urls = getSrcSetUrls(srcset);
     return urls[0];
 }
-function isAsset(node) {
-    var _a, _b, _c, _d, _e, _f, _g;
-    var path = '';
-    switch (getTagName(node)) {
-        case 'img':
-            path = (_a = getAttribute(node, 'src')) !== null && _a !== void 0 ? _a : '';
-            break;
-        case 'source':
-            if (getAttribute(node, 'src')) {
-                path = (_b = getAttribute(node, 'src')) !== null && _b !== void 0 ? _b : '';
-            }
-            else {
-                path = (_c = extractFirstUrlOfSrcSet(node)) !== null && _c !== void 0 ? _c : '';
-            }
-            break;
-        case 'link':
-            if (linkRels.includes((_d = getAttribute(node, 'rel')) !== null && _d !== void 0 ? _d : '')) {
-                path = (_e = getAttribute(node, 'href')) !== null && _e !== void 0 ? _e : '';
-            }
-            break;
-        case 'meta':
-            if (getAttribute(node, 'property') === 'og:image' && getAttribute(node, 'content')) {
-                path = (_f = getAttribute(node, 'content')) !== null && _f !== void 0 ? _f : '';
-            }
-            break;
-        case 'script':
-            if (getAttribute(node, 'type') !== 'module' && getAttribute(node, 'src')) {
-                path = (_g = getAttribute(node, 'src')) !== null && _g !== void 0 ? _g : '';
-            }
-            break;
-        default:
-            return false;
-    }
-    if (!path) {
-        return false;
-    }
-    try {
-        new URL(path);
-        return false;
-    }
-    catch (e) {
-        return true;
-    }
-}
-function isHashedAsset(node) {
-    switch (getTagName(node)) {
-        case 'img':
-            return true;
-        case 'source':
-            return true;
-        case 'script':
-            return true;
-        case 'link':
-            return hashedLinkRels.includes(getAttribute(node, 'rel'));
-        case 'meta':
-            return true;
-        default:
-            return false;
-    }
-}
 function resolveAssetFilePath(browserPath, htmlDir, projectRootDir, absolutePathPrefix) {
     var _browserPath = absolutePathPrefix && browserPath[0] === '/'
         ? '/' + path.posix.relative(absolutePathPrefix, browserPath)
@@ -19217,6 +19159,12 @@ function getSourceAttribute(node) {
         case 'img': {
             return 'src';
         }
+        case 'audio': {
+            return 'src';
+        }
+        case 'video': {
+            return 'src';
+        }
         case 'source': {
             return getAttribute(node, 'src') ? 'src' : 'srcset';
         }
@@ -19235,11 +19183,84 @@ function getSourceAttribute(node) {
 }
 var sourceAttributesByTag = {
     'img': ['src'],
+    'audio': ['src'],
+    'video': ['src'],
     'source': ['src', 'srcset'],
     'link': ['href'],
     'script': ['src'],
     'meta': ['content'],
 };
+function isAsset(node) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var path = '';
+    var tagName = getTagName(node);
+    switch (tagName) {
+        case 'img':
+            path = (_a = getAttribute(node, 'src')) !== null && _a !== void 0 ? _a : '';
+            break;
+        case 'audio':
+            path = (_b = getAttribute(node, 'src')) !== null && _b !== void 0 ? _b : '';
+            break;
+        case 'video':
+            path = (_c = getAttribute(node, 'src')) !== null && _c !== void 0 ? _c : '';
+            break;
+        case 'source':
+            if (getAttribute(node, 'src')) {
+                path = (_d = getAttribute(node, 'src')) !== null && _d !== void 0 ? _d : '';
+            }
+            else {
+                path = (_e = extractFirstUrlOfSrcSet(node)) !== null && _e !== void 0 ? _e : '';
+            }
+            break;
+        case 'link':
+            if (linkRels.includes((_f = getAttribute(node, 'rel')) !== null && _f !== void 0 ? _f : '')) {
+                path = (_g = getAttribute(node, 'href')) !== null && _g !== void 0 ? _g : '';
+            }
+            break;
+        case 'meta':
+            if (getAttribute(node, 'property') === 'og:image' && getAttribute(node, 'content')) {
+                path = (_h = getAttribute(node, 'content')) !== null && _h !== void 0 ? _h : '';
+            }
+            break;
+        case 'script':
+            if (getAttribute(node, 'type') !== 'module' && getAttribute(node, 'src')) {
+                path = (_j = getAttribute(node, 'src')) !== null && _j !== void 0 ? _j : '';
+            }
+            break;
+        default:
+            return false;
+    }
+    if (!path) {
+        return false;
+    }
+    try {
+        new URL(path);
+        return false;
+    }
+    catch (e) {
+        return true;
+    }
+}
+function isHashedAsset(node) {
+    switch (getTagName(node)) {
+        case 'img':
+            return true;
+        case 'audio':
+            return true;
+        case 'video':
+            return true;
+        case 'source':
+            return true;
+        case 'script':
+            return true;
+        case 'link':
+            return hashedLinkRels.includes(getAttribute(node, 'rel'));
+        case 'meta':
+            return true;
+        default:
+            return false;
+    }
+}
 function getAssetTagData(node) {
     var key = getSourceAttribute(node);
     var tagName = getTagName(node);
@@ -19274,6 +19295,9 @@ function extractAssets(params) {
             var node = assetNodes_1_1.value;
             var assetTagData = getAssetTagData(node);
             var _loop_1 = function (sourcePath) {
+                var newAssetTagData = Object.assign({}, assetTagData);
+                newAssetTagData.paths = [sourcePath];
+                sourcePath = sourcePath.trim();
                 if (isExternal(sourcePath))
                     return "continue";
                 var filePath = resolveAssetFilePath(sourcePath, params.htmlDir, params.rootDir, params.absolutePathPrefix);
@@ -19295,7 +19319,7 @@ function extractAssets(params) {
                         throw new Error("Could not find ".concat(filePath, " referenced from HTML file ").concat(params.htmlFilePath, " from element ").concat(elStr, "."));
                     }
                     var content = fs.readFileSync(filePath);
-                    allAssets.push({ filePath: filePath, outputFilePath: outputFilePath, hashed: hashed, content: content, assetTagData: assetTagData });
+                    allAssets.push({ filePath: filePath, outputFilePath: outputFilePath, hashed: hashed, content: content, assetTagData: newAssetTagData });
                 }
             };
             try {
@@ -19345,7 +19369,11 @@ function extractModulesAndAssets(params) {
     return assets;
 }
 
-var ROOT_PATH_KEY = '_ROOT_/';
+var ROOT_PATH_KEY = '__ROOT__/';
+// Regex for whitespace in group
+var gws = '\\r|\\n|\\s';
+// Regex for whitespace in character class
+var cws = '\\r\\n\\s';
 var StatementsProcessor = /** @class */ (function () {
     function StatementsProcessor(templateData, handlebarsPluginOptions) {
         if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
@@ -19356,7 +19384,7 @@ var StatementsProcessor = /** @class */ (function () {
         this.assets = processResult.assets;
     }
     StatementsProcessor.renameAllRootPathPartials = function (source) {
-        return source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)\\/", 'gms'), "$1".concat(ROOT_PATH_KEY));
+        return source.replaceAll(new RegExp("(\\{\\{#?>(".concat(gws, ")*)\\/"), 'gms'), "$1".concat(ROOT_PATH_KEY));
     };
     // Recursive function for getting nested partials with pathname
     StatementsProcessor.prototype.processStatements = function (templateData, partialsMap, helpersMap, assetsMap) {
@@ -19448,9 +19476,11 @@ var StatementsProcessor = /** @class */ (function () {
         var resolvedPartialPath = isRootPath ? partialPath : this.resolvePartialFilepath(partialPath, templateData);
         // Rewrite the original source to be passed to final source map
         templateData.source = this.renamePartialInstances(templateData.source, partialPath, resolvedPartialPath);
+        var extname = path.extname(templateData.name);
+        var partialTemplateName = resolvedPartialPath.replace(new RegExp("\\.\\w+$"), '') + extname;
         // Get the nested partials
         var partialTemplateData = {
-            name: resolvedPartialPath,
+            name: partialTemplateName,
             source: partialSource,
             rootFile: templateData.rootFile
         };
@@ -19481,10 +19511,14 @@ var StatementsProcessor = /** @class */ (function () {
     StatementsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
         var isRootPath = partialPath.startsWith('/');
         var rootFileDirectory = isRootPath ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
-        var currentFilepath = templateData.name;
+        var templatePath = templateData.name;
+        var templatePathIsRootRelative = templatePath.startsWith(ROOT_PATH_KEY);
+        var currentFilepath = templatePathIsRootRelative ?
+            path.join(this.handlebarsPluginOptions.rootDir, templatePath.replace(ROOT_PATH_KEY, '')) :
+            templatePath;
         var extname = path.extname(currentFilepath);
         var relativeFileDirectory = path.dirname(currentFilepath);
-        var relativePartialPath = isRootPath ? partialPath.replace(/^\//, '') : path.join(relativeFileDirectory, partialPath);
+        var relativePartialPath = isRootPath ? partialPath.replace('/', '') : path.join(relativeFileDirectory, partialPath);
         var fullRelativePartialPath = path.normalize("".concat(relativePartialPath).concat(extname));
         var partialAbsolutePath = path.resolve(rootFileDirectory, fullRelativePartialPath);
         var partialSource;
@@ -19537,7 +19571,7 @@ var StatementsProcessor = /** @class */ (function () {
     StatementsProcessor.prototype.renamePartialInstances = function (source, fromName, resolvedPartialPath) {
         var extname = path.extname(resolvedPartialPath);
         var resolvedPartialName = !extname ? resolvedPartialPath : resolvedPartialPath.replace(new RegExp("".concat(extname, "$")), '');
-        source = source.replaceAll(new RegExp("(\\{\\{#?>(\\n|\\s)*)(".concat(fromName, ")(?=[\\r\\n\\s\\}])"), 'gms'), "$1".concat(resolvedPartialName));
+        source = source.replaceAll(new RegExp("(\\{\\{#?>(".concat(gws, ")*)(").concat(fromName, ")(?=[").concat(cws, "\\}])"), 'gms'), "$1".concat(resolvedPartialName));
         return source;
     };
     // Rewrite the original source to be passed to final source map
@@ -19545,7 +19579,7 @@ var StatementsProcessor = /** @class */ (function () {
         var extname = path.extname(resolvedHelperPath);
         var resolvedHelperName = !extname ? resolvedHelperPath : resolvedHelperPath.replace(new RegExp("".concat(extname, "$")), '');
         resolvedHelperName = this.escapePathName(resolvedHelperName);
-        source = source.replaceAll(new RegExp("(\\{\\{(?:\\n|\\s)*)(\\[?)".concat(fromName, "(\\]?)(?=[\\r\\n\\s\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
+        source = source.replaceAll(new RegExp("(\\{\\{(?:".concat(gws, ")*)(\\[?)").concat(fromName, "(\\]?)(?=[").concat(cws, "\\}])"), 'gms'), "$1$2".concat(resolvedHelperName, "$3"));
         return source;
     };
     // Rewrite the original source to be passed to final source map
@@ -19560,10 +19594,12 @@ var StatementsProcessor = /** @class */ (function () {
         try {
             for (var paths_1 = __values(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
                 var path_1 = paths_1_1.value;
+                path_1 = path_1.trim();
+                path_1 = path_1.replaceAll('.', '\\.');
                 try {
                     for (var attributes_1 = (e_2 = void 0, __values(attributes)), attributes_1_1 = attributes_1.next(); !attributes_1_1.done; attributes_1_1 = attributes_1.next()) {
                         var attr = attributes_1_1.value;
-                        source = source.replaceAll(new RegExp("\\b(".concat(attr, "=\"[^\"]*?)(").concat(path_1, "\\b(,?))"), 'gms'), "$1".concat(resolvedPath, "$3"));
+                        source = source.replaceAll(new RegExp("\\b(".concat(attr, "(?:").concat(gws, ")*=(?:").concat(gws, ")*\"(?:").concat(gws, ")*[^\"]*?)(").concat(path_1, "\\b(,?))"), 'gms'), "$1".concat(resolvedPath, "$3"));
                     }
                 }
                 catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -25515,12 +25551,11 @@ var defaultHandlebarsOptions = {
     rootDir: process.cwd(),
     assets: {
         emit: true,
-        resovle: true
+        resolve: true
     }
 };
-function handlebarsCompilerPlugin(handlebarsPluginOptions) {
+function getPluginOptions(handlebarsPluginOptions) {
     if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
-    var hbsTransformer;
     if (!handlebarsPluginOptions || typeof handlebarsPluginOptions !== 'object') {
         handlebarsPluginOptions = {};
     }
@@ -25528,10 +25563,21 @@ function handlebarsCompilerPlugin(handlebarsPluginOptions) {
     if (!handlebarsPluginOptions.assets || typeof handlebarsPluginOptions.assets !== 'object') {
         handlebarsPluginOptions.assets = {};
     }
+    // If neither assets.emit or assets.resolved are defined, always resolve and emit assets
+    if (typeof handlebarsPluginOptions.assets.emit === 'undefined' &&
+        typeof handlebarsPluginOptions.assets.resolve === 'undefined') {
+        handlebarsPluginOptions.assets = Object.assign({}, defaultHandlebarsOptions.assets, handlebarsPluginOptions.assets);
+    }
     // Always resolve assets if assets.emit is set to true
     if (handlebarsPluginOptions.assets.emit) {
         handlebarsPluginOptions.assets.resolve = true;
     }
+    return handlebarsPluginOptions;
+}
+function handlebarsCompilerPlugin(handlebarsPluginOptions) {
+    if (handlebarsPluginOptions === void 0) { handlebarsPluginOptions = {}; }
+    var hbsTransformer;
+    handlebarsPluginOptions = getPluginOptions(handlebarsPluginOptions);
     return {
         name: 'handlebars-compiler',
         transform: function (source, id) {
@@ -25566,4 +25612,5 @@ function handlebarsCompilerPlugin(handlebarsPluginOptions) {
     };
 }
 
-module.exports = handlebarsCompilerPlugin;
+exports.default = handlebarsCompilerPlugin;
+exports.getPluginOptions = getPluginOptions;
