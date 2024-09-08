@@ -19138,12 +19138,8 @@ function extractFirstUrlOfSrcSet(node) {
     var urls = getSrcSetUrls(srcset);
     return urls[0];
 }
-function resolveAssetFilePath(browserPath, htmlDir, projectRootDir, absolutePathPrefix) {
-    var _browserPath = absolutePathPrefix && browserPath[0] === '/'
-        ? '/' + path.posix.relative(absolutePathPrefix, browserPath)
-        : browserPath;
-    // const fileDir = partialIsRootRelative ? path.relative(projectRootDir, htmlDir)
-    return path.join(_browserPath.startsWith('/') ? projectRootDir : htmlDir, _browserPath.split('/').join(path.sep));
+function resolveAssetFilePath(browserPath, htmlDir, projectRootDir) {
+    return path.join(browserPath.startsWith('/') ? projectRootDir : htmlDir, browserPath.split('/').join(path.sep));
 }
 function resolveOutputPathFromRoot(browserPath, partialIsRootRelative, htmlDir, partialDir, projectRootDir, contextPath, outputDir) {
     var absoluteFilepath = partialIsRootRelative ? path.join(projectRootDir, partialDir, browserPath) : path.join(htmlDir, partialDir, browserPath);
@@ -19300,7 +19296,7 @@ function extractAssets(params) {
                 sourcePath = sourcePath.trim();
                 if (isExternal(sourcePath))
                     return "continue";
-                var filePath = resolveAssetFilePath(sourcePath, params.htmlDir, params.rootDir, params.absolutePathPrefix);
+                var filePath = resolveAssetFilePath(sourcePath, params.htmlDir, params.rootDir);
                 var outputFilePath = void 0;
                 if (params.resolvePath) {
                     outputFilePath = resolveOutputPathFromRoot(sourcePath, params.partialIsRootRelative, params.htmlDir, params.partialDir, params.rootDir, params.contextPath, params.outputDir);
@@ -19309,6 +19305,7 @@ function extractAssets(params) {
                     outputFilePath = sourcePath;
                 }
                 var hashed = isHashedAsset(node);
+                console.log(hashed, sourcePath);
                 var alreadyHandled = allAssets.find(function (a) { return a.filePath === filePath && a.hashed === hashed; });
                 if (!alreadyHandled) {
                     try {
@@ -19316,7 +19313,7 @@ function extractAssets(params) {
                     }
                     catch (error) {
                         var elStr = serialize(node);
-                        throw new Error("Could not find ".concat(filePath, " referenced from HTML file ").concat(params.htmlFilePath, " from element ").concat(elStr, "."));
+                        throw new Error("Could not find ".concat(filePath, " referenced from HTML file ").concat(params.templateFilepath, " from element ").concat(elStr, "."));
                     }
                     var content = fs.readFileSync(filePath);
                     allAssets.push({ filePath: filePath, outputFilePath: outputFilePath, hashed: hashed, content: content, assetTagData: newAssetTagData });
@@ -19348,10 +19345,10 @@ function extractAssets(params) {
 }
 
 function extractModulesAndAssets(params) {
-    var partialIsRootRelative = params.partialIsRootRelative, resolvePath = params.resolvePath, html = params.html, htmlFilePath = params.htmlFilePath, partialPath = params.partialPath, rootDir = params.rootDir, externalAssets = params.externalAssets, absolutePathPrefix = params.absolutePathPrefix, contextPath = params.contextPath, outputDir = params.outputDir;
-    var htmlDir = path.dirname(htmlFilePath);
+    var partialIsRootRelative = params.partialIsRootRelative, resolvePath = params.resolvePath, template = params.template, templateFilepath = params.templateFilepath, partialPath = params.partialPath, rootDir = params.rootDir, externalAssets = params.externalAssets, contextPath = params.contextPath, outputDir = params.outputDir;
+    var htmlDir = path.dirname(templateFilepath);
     var partialDir = path.dirname(partialPath);
-    var document = parse$3(html);
+    var document = parse$3(template);
     // extract functions mutate the AST
     var assets = extractAssets({
         partialIsRootRelative: partialIsRootRelative,
@@ -19359,10 +19356,9 @@ function extractModulesAndAssets(params) {
         document: document,
         htmlDir: htmlDir,
         partialDir: partialDir,
-        htmlFilePath: htmlFilePath,
+        templateFilepath: templateFilepath,
         rootDir: rootDir,
         externalAssets: externalAssets,
-        absolutePathPrefix: absolutePathPrefix,
         contextPath: contextPath,
         outputDir: outputDir
     });
@@ -19431,8 +19427,8 @@ var StatementsProcessor = /** @class */ (function () {
         return extractModulesAndAssets({
             partialIsRootRelative: partialIsRootRelative,
             resolvePath: resolvePath,
-            html: templateData.source,
-            htmlFilePath: absoluteTemplatePath,
+            template: templateData.source,
+            templateFilepath: absoluteTemplatePath,
             partialPath: templateName,
             rootDir: this.handlebarsPluginOptions.rootDir,
             contextPath: this.handlebarsPluginOptions.assets.contextPath,
@@ -19466,14 +19462,14 @@ var StatementsProcessor = /** @class */ (function () {
     };
     // Process a partial then recursively process further nested partials
     StatementsProcessor.prototype.processPartial = function (partialPath, templateData, partialsMap, helpersMap, assetsMap) {
-        var isRootPath = partialPath.startsWith(ROOT_PATH_KEY);
-        var parsedPartialPath = isRootPath ? partialPath.replace(ROOT_PATH_KEY, '/') : partialPath;
+        var partialIsRootRelative = partialPath.startsWith(ROOT_PATH_KEY);
+        var parsedPartialPath = partialIsRootRelative ? partialPath.replace(ROOT_PATH_KEY, '/') : partialPath;
         // Skip if partial does not exist
         var partialSource = this.resolvePartialSource(parsedPartialPath, templateData);
         if (!partialSource)
             return;
         // Resolve the partial path relative to the root file
-        var resolvedPartialPath = isRootPath ? partialPath : this.resolvePartialFilepath(partialPath, templateData);
+        var resolvedPartialPath = partialIsRootRelative ? partialPath : this.resolvePartialFilepath(partialPath, templateData);
         // Rewrite the original source to be passed to final source map
         templateData.source = this.renamePartialInstances(templateData.source, partialPath, resolvedPartialPath);
         var extname = path.extname(templateData.name);
@@ -19509,27 +19505,24 @@ var StatementsProcessor = /** @class */ (function () {
         return helperSource;
     };
     StatementsProcessor.prototype.getPartialSource = function (partialPath, templateData) {
-        var isRootPath = partialPath.startsWith('/');
-        var rootFileDirectory = isRootPath ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
+        var partialIsRootRelative = partialPath.startsWith('/');
+        var rootFileDirectory = partialIsRootRelative ? this.handlebarsPluginOptions.rootDir : path.dirname(templateData.rootFile);
+        // Get template path according to whether it is root relative or not
         var templatePath = templateData.name;
-        var templatePathIsRootRelative = templatePath.startsWith(ROOT_PATH_KEY);
-        var currentFilepath = templatePathIsRootRelative ?
+        var templateIsRootRelative = templatePath.startsWith(ROOT_PATH_KEY);
+        var currentFilepath = templateIsRootRelative ?
             path.join(this.handlebarsPluginOptions.rootDir, templatePath.replace(ROOT_PATH_KEY, '')) :
             templatePath;
         var extname = path.extname(currentFilepath);
         var relativeFileDirectory = path.dirname(currentFilepath);
-        var relativePartialPath = isRootPath ? partialPath.replace('/', '') : path.join(relativeFileDirectory, partialPath);
+        var relativePartialPath = partialIsRootRelative ? partialPath.replace('/', '') : path.join(relativeFileDirectory, partialPath);
         var fullRelativePartialPath = path.normalize("".concat(relativePartialPath).concat(extname));
         var partialAbsolutePath = path.resolve(rootFileDirectory, fullRelativePartialPath);
         var partialSource;
         try {
             partialSource = fs.readFileSync(partialAbsolutePath, 'utf-8');
         }
-        catch (e) {
-            // const fileWithError = path.join(rootFileDirectory, currentFilepath)
-            // console.error(`\x1b[31mPartial \x1b[1m${partialAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
-            // console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
-        }
+        catch (e) { }
         return partialSource;
     };
     StatementsProcessor.prototype.checkIfHelperExists = function (helperPath, templateData) {
@@ -19544,11 +19537,7 @@ var StatementsProcessor = /** @class */ (function () {
         try {
             helperExists = fs.existsSync(absoluteFilepath);
         }
-        catch (e) {
-            // const fileWithError = path.join(rootFileDirectory, currentFilepath)
-            // console.error(`\x1b[31mHelper \x1b[1m${helperAbsolutePath}\x1b[0m\x1b[31m does not exist\x1b[0m`)
-            // console.error(`\t\x1b[2mError in ${fileWithError}\x1b[0m`)
-        }
+        catch (e) { }
         return helperExists;
     };
     StatementsProcessor.prototype.resolvePartialFilepath = function (partialPath, templateData) {

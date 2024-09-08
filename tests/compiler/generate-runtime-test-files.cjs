@@ -27572,7 +27572,6 @@ function extractAssets(params) {
                     outputFilePath = sourcePath;
                 }
                 var hashed = isHashedAsset(node);
-                console.log(hashed, sourcePath);
                 var alreadyHandled = allAssets.find(function (a) { return a.filePath === filePath && a.hashed === hashed; });
                 if (!alreadyHandled) {
                     try {
