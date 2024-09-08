@@ -354,6 +354,28 @@ describe('Handlebars Plugin Compiler', () => {
             )
         })
         
+        it('should be able to set assets output directory', async () => {
+    
+            const pluginOptions: HandlebarsPluginOptions = {
+                rootDir: path.join(__dirname, '../'),
+                assets: {
+                    contextPath: 'src',
+                    outputDir: 'assets'
+                }
+            }
+    
+            testTemplate(
+                '../src/with-img-src.hbs',
+                pluginOptions,
+                false,
+                async (err, output) => {
+                    console.log(output)
+                    const captureOutput = output?.code.includes("\"/assets/images/nested/handlebars.png")
+                    expect(captureOutput).toBe(true)
+                }
+            )
+        })
+        
         it('should resolve img src assets', async () => {
     
             const pluginOptions: HandlebarsPluginOptions = {
