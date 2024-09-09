@@ -350,6 +350,7 @@ By default, the Handlebars Compiler plugin will scan and resolve any assets refe
 Output:
 ```html
 <!-- resolves to relative root path (relative to cwd by default) -->
+<!-- With `output.dir` set to `dist`, outputs file as `dist/src/images/logo.png` -->
 <img src="/src/images/logo.png">
 ```
 
