@@ -1,7 +1,7 @@
 {
   "name": "rollup-plugin-handlebars-compiler",
-  "version": "1.2.0",
-  "description": "Rollup plugin to compile Handlebars templates to JavaScript with partials, helpers, and precompile options.",
+  "version": "1.2.1",
+  "description": "Rollup plugin to compile Handlebars templates to JavaScript with partials, helpers, assets, and Handlebars compile options.",
   "scripts": {
     "build": "rollup --config",
     "dev": "rollup --config --watch --environment BUILD:development",
