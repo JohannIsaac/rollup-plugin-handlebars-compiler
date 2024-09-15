@@ -1,13 +1,38 @@
 # rollup-plugin-handlebars-compiler
-A Rollup plugin to pre-compile Handlebars templates to JavaScript functions.
+A Rollup plugin to compile Handlebars templates to JavaScript with partials, helpers, assets, and Handlebars compile options.
 
 This plugin supports:
-- Partials
-- Helpers
-- Handlebars compile options
-- Resolving and emitting assets
+- Handlebars Compile options
+- Passing Template Data
+- Partials - through plugin options or by path
+- Helpers - through plugin options or by path
+- Assets - resolving and emitting assets to the output directory
 
-See [Rollup](https://rollupjs.org/) and [Handlebars](http://handlebarsjs.com).
+
+
+## Table of Contents
+
+1. [Installation](#installation)
+2. [Usage](#usage)
+    - [Rollup Configuration](#rollup-configuration)
+    - [Example](#example)
+3. [Plugin Options](#plugin-options)
+4. [Details](#details)
+    - [Data](#data)
+        - [Pass data through plugin options](#pass-data-through-plugin-options)
+        - [Pass data through the template function](#pass-data-through-the-template-function)
+    - [Partials](#partials)
+        - [Register partials through plugin options](#register-partials-through-plugin-options)
+        - [Reference partials by relative path](#reference-partials-by-relative-path)
+    - [Helpers](#helpers)
+        - [Register helpers through plugin options](#register-helpers-through-plugin-options)
+        - [Reference helpers by relative path](#reference-helpers-by-relative-path)
+    - [Assets](#assets)
+5. [Change Log](#change-log)
+6. [Attribution](#attribution)
+7. [License](#license)
+
+
 
 ## Installation
 
@@ -20,6 +45,8 @@ This plugin and this plugin's version of Handlebars runtime is dependent on Node
 ```
 npm i @rollup/plugin-node-resolve @rollup/plugin-commonjs
 ```
+
+
 
 ## Usage
 
@@ -72,6 +99,8 @@ Output:
 </h1>
 <p>Lorem ipsum sit dolor amet</p>
 ```
+
+
 
 ## Plugin Options
 
@@ -128,7 +157,7 @@ To pass data to templates, you can either:
 1. Pass data globally to all templates through the `templateData` object to the plugin options.
 1. Pass data as a parameter to the JS template function.
 
-### Pass data through plugin options
+#### Pass data through plugin options
 
 To pass global data accessible by all templates, simply pass an object to `templateData` in the plugin options.
 
@@ -147,7 +176,7 @@ export default {
 }
 ```
 
-### Pass data through the template function
+#### Pass data through the template function
 
 To pass data specific to the template function, simply pass an object to the first parameter.
 
@@ -176,47 +205,13 @@ Jane Doe
 
 
 
-### Helpers
-
-To pass helpers, simply pass a `helpers` object to the plugin options.
-
-```javascript
-// src/helpers.js
-export function fullname(firstName, lastName) {
-    return `${firstName} ${lastName}`
-}
-
-export function list(items, options) {
-  const itemsAsHtml = items.map(item => "<li>" + options.fn(item) + "</li>");
-  return "<ul>\n" + itemsAsHtml.join("\n") + "\n</ul>";
-}
-```
-
-```javascript
-// rollup.config.js
-export default {
-    import { fullname, list } from 'src/helpers.js'
-
-    ...
-    plugins: [
-        ...
-        handlebarsCompiler({
-            helpers: {
-                fullname,
-                list,
-            },
-        })
-    ]
-}
-```
-
 ### Partials
 
 To pass partials, you can either:
 1. Pass partials to the `partials` object to the plugin options.
 1. Use the relative path in the handlebars template/partial.
 
-#### Register through plugin options
+#### Register partials through plugin options
 
 To register through plugin options, simply pass the partial content with the partial name as the ID.
 
@@ -246,7 +241,7 @@ Output:
 </h1>
 ```
 
-### Reference partials by relative path
+#### Reference partials by relative path
 
 The plugin resolves partials and helpers automatically. They are looked up relative to the current directory.
 
@@ -255,10 +250,6 @@ The plugin resolves partials and helpers automatically. They are looked up relat
 {{> template }} will reference "src/partials/template.hbs" if this file exists.
 {{> ../template }} will reference "src/template.hbs" if this file exists.
 {{> /src/template }} will reference "src/template.hbs" if this file exists.
-{{helper}} will reference the helper "src/helper.js" if this file exists.
-{{../helper}} will reference "helper.js" if this file exists.
-{{./nested/helper}} will reference the helper "/src/nested/helper.js" if this file exists.
-{{[nested/helper] 'helper parameter'}} will reference the helper "/src/nested/helper.js" if this file exists, passes 'helper parameter' as first parameter to helper.
 ```
 
 The plugin will automatically resolve any nested partials. However, if a relative partial path's name collides with any partial name passed through the plugin options, the partial passed through the plugin options takes precedence.
@@ -294,6 +285,58 @@ Output:
 <h1>I am from the plugin options</h1>
 ```
 
+
+
+### Helpers
+
+To pass helpers, simply pass a `helpers` object to the plugin options.
+
+#### Register helpers through plugin options
+
+```javascript
+// src/helpers.js
+export function fullname(firstName, lastName) {
+    return `${firstName} ${lastName}`
+}
+
+export function list(items, options) {
+  const itemsAsHtml = items.map(item => "<li>" + options.fn(item) + "</li>");
+  return "<ul>\n" + itemsAsHtml.join("\n") + "\n</ul>";
+}
+```
+
+```javascript
+// rollup.config.js
+export default {
+    import { fullname, list } from 'src/helpers.js'
+
+    ...
+    plugins: [
+        ...
+        handlebarsCompiler({
+            helpers: {
+                fullname,
+                list,
+            },
+        })
+    ]
+}
+```
+
+#### Reference helpers by relative path
+
+The plugin resolves partials and helpers automatically. They are looked up relative to the current directory.
+
+```hbs
+{{! src/template.hbs }}
+{{helper}} will reference the helper "src/helper.js" if this file exists.
+{{../helper}} will reference "helper.js" if this file exists.
+{{./nested/helper}} will reference the helper "src/nested/helper.js" if this file exists.
+{{[nested/helper] 'helper parameter'}} will reference the helper "src/nested/helper.js" if this file exists, passes 'helper parameter' as first parameter to helper.
+```
+
+
+
 ### Assets
 
 By default, the Handlebars Compiler plugin will scan and resolve any assets referenced in HTML tags and emit them in the Rollup output directory (`output.dir` option in the Rollup config).
@@ -306,6 +349,7 @@ By default, the Handlebars Compiler plugin will scan and resolve any assets refe
 Output:
 ```html
 <!-- resolves to relative root path (relative to cwd by default) -->
+<!-- With `output.dir` set to `dist`, outputs file as `dist/src/images/logo.png` -->
 <img src="/src/images/logo.png">
 ```
 

@@ -7,29 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.2.1](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/58)  2020-9-15
+
+### Changed
+
+- Documentation update for version 1.2.0
+
+
+
 ## [1.2.0](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/51)  2020-9-9
 
 ### Changed
 
-- Removed js-beautify package for optimization and because of lack of support
-
-
-
-## [1.1.9](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/50)  2020-9-9
-
-### Changed
-
-- Updated README
-- Optimized size
-
-
-
-## [1.1.6](https://github.com/JohannIsaac/rollup-plugin-handlebars-compiler/pull/45)  2020-9-9
-
-### Added
-
 - Added support for root relative paths for partials (relative from `process.cwd()` by default but can be changed through the `rootDir` plugin option)
-- Added support for resolving and emitting assets referenced in Handlebars templates (enabled by default, but emitting and/or resolving can be disabled in the plugin options. [See Documentation](README.md))
+- Added support for resolving and emitting assets referenced in Handlebars templates (enabled by default, but emitting and/or resolving can be disabled in the plugin options. [See Documentation](README.md)
+- Removed js-beautify package for optimization and because of lack of support
 
 
 
