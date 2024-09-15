@@ -1,13 +1,12 @@
 # rollup-plugin-handlebars-compiler
-A Rollup plugin to pre-compile Handlebars templates to JavaScript functions.
+A Rollup plugin to compile Handlebars templates to JavaScript with partials, helpers, assets, and Handlebars compile options.
 
 This plugin supports:
-- Partials
-- Helpers
-- Handlebars compile options
-- Resolving and emitting assets
-
-See [Rollup](https://rollupjs.org/) and [Handlebars](http://handlebarsjs.com).
+- Handlebars Compile options
+- Passing Template Data
+- Partials - through plugin options or by path
+- Helpers - through plugin options or by path
+- Assets - resolving and emitting assets to the output directory
 
 
 
