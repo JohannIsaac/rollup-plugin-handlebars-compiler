@@ -3,7 +3,7 @@ import StatementsProcessor from './StatementsProcessor';
 import pluginOptions from './plugin-options';
 
 import { HandlebarsPluginOptions } from './types/plugin-options';
-import { CompileResult } from './types/Handlebars';
+import { CompileResult } from './types/handlebars';
 import HandlebarsCompiler from './HandlebarsCompiler';
 import { SourceMap } from './SourceMap';
 import { ImportsMap } from './ImportsMap';
