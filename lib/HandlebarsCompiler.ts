@@ -3,7 +3,7 @@ import * as ParsedOptions from './types/plugin-options/parsed';
 import path from 'path';
 import Handlebars from 'handlebars';
 
-import { CompileResult, TemplateSourceMap, TemplateSpecification } from './types/Handlebars';
+import { CompileResult, TemplateSourceMap, TemplateSpecification } from './types/handlebars';
 
 type CompiledData = [string, TemplateSpecification]
 
